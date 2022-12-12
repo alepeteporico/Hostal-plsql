@@ -64,3 +64,18 @@ EXEC ActividadTodoIncluido ('A001');
 
 ---Funciona correctamente
 EXEC ActividadTodoIncluido ('A032');
+
+
+---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
+CREATE OR REPLACE PROCEDURE ClienteRealizaActividad (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
+    v_cliente NUMBER;
+BEGIN
+    SELECT codigo INTO v_cliente
+    FROM estancias WHERE nifcliente=v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
+    IF v_cliente IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001,'El cliente nunca ha realizado esa actividad');
+    END IF;
+END;
+/
+
+EXEC ClienteRealizaActividad ('69191424H', 'B302');
