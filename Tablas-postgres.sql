@@ -26,10 +26,10 @@ CREATE TABLE habitaciones(
 
 CREATE TABLE personas(
 	nif VARCHAR(9),
-	nombre VARCHAR(35) CONSTRAINT nombre_obligatORio NOT NULL,
-	apellidos VARCHAR(35) CONSTRAINT apellidos_obligatORio NOT NULL,
-	direccion VARCHAR(150) CONSTRAINT direccion_obligatORio NOT NULL,
-	localidad VARCHAR(35) CONSTRAINT localidad_obligatORio NOT NULL,
+	nombre VARCHAR(35) CONSTRAINT nombre_obligatorio NOT NULL,
+	apellidos VARCHAR(35) CONSTRAINT apellidos_obligatorio NOT NULL,
+	direccion VARCHAR(150) CONSTRAINT direccion_obligatorio NOT NULL,
+	localidad VARCHAR(35) CONSTRAINT localidad_obligatorio NOT NULL,
 	CONSTRAINT pk_personas PRIMARY KEY (nif),
 	CONSTRAINT nif_valido CHECK( nif ~ '[0-9]{8}[A-Z]{1}' OR nif ~ '[K,L,M,X,Y,Z]{1}[0-9]{7}[A-Z]{1}'),
   	CONSTRAINT localidades CHECK( localidad LIKE '%(Salamanca)' OR localidad LIKE '%(?vila)' OR localidad LIKE '%(Madrid)')
@@ -37,12 +37,12 @@ CREATE TABLE personas(
 
 CREATE TABLE estancias (
 	codigo VARCHAR(9),
-	fecha_INicio DATE,
-	fecha_fIN DATE,
+	fecha_inicio DATE,
+	fecha_fin DATE,
 	numerohabitacion VARCHAR(9),
 	nifresponsable VARCHAR(9),
 	nifcliente VARCHAR(9),
-	codigORegimen VARCHAR(9),
+	codigoregimen VARCHAR(9),
 	CONSTRAINT pk_estancias PRIMARY KEY (codigo),
 	CONSTRAINT unica_estancia unique (nifresponsable),
 	CONSTRAINT fk_estanciasnumhab FOREIGN KEY (numerohabitacion) REFERENCES habitaciones(numero),
@@ -56,8 +56,8 @@ CREATE TABLE tarifas(
 	codigo VARCHAR(9),
 	codigotipohabitacion VARCHAR(9),
 	codigotempORada	VARCHAR(9),
-	codigORegimen VARCHAR(9),
-	preciopORdia DECIMAL(6,2),
+	codigoregimen VARCHAR(9),
+	preciopordia DECIMAL(6,2),
 	CONSTRAINT pk_tarifas PRIMARY KEY (codigo),
 	CONSTRAINT fk_tarifastipo FOREIGN KEY (codigotipohabitacion) REFERENCES tipos_de_habitacion(codigo),
 	CONSTRAINT fk_tarifasregimenes FOREIGN KEY (codigORegimen) REFERENCES regimenes(codigo),
@@ -103,7 +103,7 @@ CREATE TABLE actividades (
 	costepersonaparahotel DECIMAL(6,2),
 	CONSTRAINT pk_actividades PRIMARY KEY (codigo),
 	CONSTRAINT codigo_valido CHECK(codigo ~ '[A-Z]{1}[0-9]{3}.*'),
-	CONSTRAINT comisionhotel_INferiOR CHECK(comisionhotel <= preciopORpersona*0.25)
+	CONSTRAINT comisionhotel_INferiOR CHECK(comisionhotel <= precioporpersona*0.25)
 );
 
 ----------------------------------------------------------------------------------------
@@ -186,9 +186,9 @@ INSERT INTO habitaciones VALUES ('11','03');
 
 ---Personas
 INSERT INTO personas VALUES ('54890865P','Alvaro','Rodriguez Marquez','C\ Alemania n?19','Madrid (Madrid)');
-INSERT INTO personas VALUES ('40687067K','AitOR','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Adanero (?vila)');
-INSERT INTO personas VALUES ('77399071T','VirgINia','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Mu?opepe (?vila)');
-INSERT INTO personas VALUES ('69191424H','Antonio AgustIN','Fernandez Melendez','C\Armero n? 19','Mu?ico (?vila)');
+INSERT INTO personas VALUES ('40687067K','Aitor','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Adanero (?vila)');
+INSERT INTO personas VALUES ('77399071T','Virginia','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Mu?opepe (?vila)');
+INSERT INTO personas VALUES ('69191424H','Antonio Agustin','Fernandez Melendez','C\Armero n? 19','Mu?ico (?vila)');
 INSERT INTO personas VALUES ('36059752F','Antonio','Melendez Delgado','C\Armero n? 18','Navadijos (?vila)');
 INSERT INTO personas VALUES ('10402498N','Carlos','Mejias Calatrava','C\ Francisco de Rioja n? 9','Abusejo (Salamanca)');
 INSERT INTO personas VALUES ('10950967T','Ana','Gutierrez Bando','C\ Burgos n? 3','Alaraz (Salamanca)');
@@ -220,20 +220,20 @@ INSERT INTO facturas VALUES ('05','01',to_DATE('25-05-2015 17:00','DD-MM-YYYY hh
 ---Gastos Extras
 INSERT INTO gastos_extra VALUES ('00','03',to_DATE('15-03-2015 18:23','DD-MM-YYYY hh24:mi'),'Bolos',7);
 INSERT INTO gastos_extra VALUES ('01','02',to_DATE('20-09-2015 19:15','DD-MM-YYYY hh24:mi'),'Centro de pasatiempo de mascotas',12);
-INSERT INTO gastos_extra VALUES ('02','01',to_DATE('23-05-2015 12:40','DD-MM-YYYY hh24:mi'),'PiscINa privada',2);
+INSERT INTO gastos_extra VALUES ('02','01',to_DATE('23-05-2015 12:40','DD-MM-YYYY hh24:mi'),'Piscina privada',2);
 INSERT INTO gastos_extra VALUES ('03','01',to_DATE('23-05-2015 17:50','DD-MM-YYYY hh24:mi'),'Wifi',2);
 INSERT INTO gastos_extra VALUES ('04','03',to_DATE('15-03-2015 20:00','DD-MM-YYYY hh24:mi'),'Masajes',8);
 INSERT INTO gastos_extra VALUES ('05','05',to_DATE('11-01-2016 16:00','DD-MM-YYYY hh24:mi'),'Spa',8);
 INSERT INTO gastos_extra VALUES ('06','07',to_DATE('24-02-2016 16:45','DD-MM-YYYY hh24:mi'),'Alquiler de bicicletas',5);
 INSERT INTO gastos_extra VALUES ('07','02',to_DATE('20-09-2015 16:00','DD-MM-YYYY hh24:mi'),'Television',2);
-INSERT INTO gastos_extra VALUES ('08','04',to_DATE('02-08-2015 13:30','DD-MM-YYYY hh24:mi'),'Rellenar mINibar', 15);
+INSERT INTO gastos_extra VALUES ('08','04',to_DATE('02-08-2015 13:30','DD-MM-YYYY hh24:mi'),'Rellenar minibar', 15);
 INSERT INTO gastos_extra VALUES ('09','00',to_DATE('12-03-2016 18:15','DD-MM-YYYY hh24:mi'),'Aire acondicionado', 6);
 INSERT INTO gastos_extra VALUES ('10','06',to_DATE('28-12-2015 19:23','DD-MM-YYYY hh24:mi'),'Telefono',3);
 INSERT INTO gastos_extra VALUES ('11','02',to_DATE('21-09-2015 10:00','DD-MM-YYYY hh24:mi'),'Alquiler de pistas',2);
 
 ---Actividades
 INSERT INTO actividades VALUES ('A001','Aventura','Red de cuevas naturales visitables-Barrancos',15,3.74,0);
-INSERT INTO actividades VALUES ('C093','Curso','Espeleologia- INiciacion',75,13,10);
+INSERT INTO actividades VALUES ('C093','Curso','Espeleologia- iniciacion',75,13,10);
 INSERT INTO actividades VALUES ('B302','Hipica','Montar a caballo durante 2 hORas',22,4,5);
 INSERT INTO actividades VALUES ('A032','Tiro con Arco','4?u desperfecto de flecha',12,2,4);
 

@@ -136,47 +136,36 @@ INSERT INTO tipos_de_habitacion VALUES ('03','Habitacion triple');
 INSERT INTO tarifas VALUES ('00','01','01','AD',50);
 INSERT INTO tarifas VALUES ('01','01','02','AD',70);
 INSERT INTO tarifas VALUES ('02','01','03','AD',60);
-
 INSERT INTO tarifas VALUES ('03','02','01','AD',60);
 INSERT INTO tarifas VALUES ('04','02','02','AD',84);
 INSERT INTO tarifas VALUES ('05','02','03','AD',72);
-
 INSERT INTO tarifas VALUES ('06','03','01','AD',81);
 INSERT INTO tarifas VALUES ('07','03','02','AD',115);
 INSERT INTO tarifas VALUES ('08','03','03','AD',100);
-
 INSERT INTO tarifas VALUES ('09','01','01','MP',35);
 INSERT INTO tarifas VALUES ('10','01','02','MP',50);
 INSERT INTO tarifas VALUES ('11','01','03','MP',40);
-
 INSERT INTO tarifas VALUES ('12','02','01','MP',79);
 INSERT INTO tarifas VALUES ('13','02','02','MP',119);
 INSERT INTO tarifas VALUES ('14','02','03','MP',70);
-
 INSERT INTO tarifas VALUES ('15','03','01','MP',43);
 INSERT INTO tarifas VALUES ('16','03','02','MP',65);
 INSERT INTO tarifas VALUES ('17','03','03','MP',52.5);
-
 INSERT INTO tarifas VALUES ('18','01','01','PC',85);
 INSERT INTO tarifas VALUES ('19','01','02','PC',102);
 INSERT INTO tarifas VALUES ('20','01','03','PC',92.9);
-
 INSERT INTO tarifas VALUES ('21','02','01','PC',80.5);
 INSERT INTO tarifas VALUES ('22','02','02','PC',105.6);
 INSERT INTO tarifas VALUES ('23','02','03','PC',93.5);
-
 INSERT INTO tarifas VALUES ('24','03','01','PC',61.6);
 INSERT INTO tarifas VALUES ('25','03','02','PC',110);
 INSERT INTO tarifas VALUES ('26','03','03','PC',94.1);
-
 INSERT INTO tarifas VALUES ('27','01','01','TI',79);
 INSERT INTO tarifas VALUES ('28','01','02','TI',99);
 INSERT INTO tarifas VALUES ('29','01','03','TI',86);
-
 INSERT INTO tarifas VALUES ('30','02','01','TI',60);
 INSERT INTO tarifas VALUES ('31','02','02','TI',95);
 INSERT INTO tarifas VALUES ('32','02','03','TI',80);
-
 INSERT INTO tarifas VALUES ('33','03','01','TI',60);
 INSERT INTO tarifas VALUES ('34','03','02','TI',87);
 INSERT INTO tarifas VALUES ('35','03','03','TI',70);
@@ -209,6 +198,7 @@ INSERT INTO personas VALUES ('88095695Z','Adrian','Garcia Guerra','C\ Nueva nº 
 INSERT INTO personas VALUES ('95327640T','Juan Carlos','Romero Diaz','C\ San Lorenzo nº 22','Ajalvir (Madrid)');
 INSERT INTO personas VALUES ('06852683V','Francisco','Franco Giraldez','AAVV Rosales nº 1','Leganés (Madrid)');
 
+
 -//Estancias -- codigo, fecha inicio, fecha fin, numerohabitacion, nifresponsable, nifcliente, codigoregimen
 INSERT INTO estancias VALUES ('00',to_DATE('11-03-2016 12:00','DD-MM-YYYY hh24:mi'),to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'),'00','54890865P','54890865P','AD');
 INSERT INTO estancias VALUES ('01',to_DATE('19-05-2015 17:00','DD-MM-YYYY hh24:mi'),to_DATE('25-05-2015 17:00','DD-MM-YYYY hh24:mi'),'10','10950967T','10950967T','MP');
@@ -218,6 +208,7 @@ INSERT INTO estancias VALUES ('04',to_DATE('30-07-2015 18:00','DD-MM-YYYY hh24:m
 INSERT INTO estancias VALUES ('05',to_DATE('09-01-2016 16:35','DD-MM-YYYY hh24:mi'),to_DATE('12-01-2015 16:35','DD-MM-YYYY hh24:mi'),'05','40687067K','40687067K','MP');
 INSERT INTO estancias VALUES ('06',to_DATE('26-12-2015 19:50','DD-MM-YYYY hh24:mi'),to_DATE('01-01-2016 19:50','DD-MM-YYYY hh24:mi'),'07','77399071T','77399071T','PC');
 INSERT INTO estancias VALUES ('07',to_DATE('22-02-2016 20:20','DD-MM-YYYY hh24:mi'),to_DATE('29-02-2016 20:20','DD-MM-YYYY hh24:mi'),'04','69191424H','69191424H','PC');
+
 
 -//Facturas -- numero, codigoestancia, fecha
 INSERT INTO facturas VALUES ('00','00',to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'));
@@ -259,3 +250,4 @@ INSERT INTO actividadesrealizadas VALUES ('01','C093',to_DATE('21-05-2015 17:00'
 INSERT INTO actividadesrealizadas VALUES ('05','A001',to_DATE('10-01-2016 16:15','DD-MM-YYYY hh24:mi'),4,60);
 INSERT INTO actividadesrealizadas VALUES ('07','B302',to_DATE('28-02-2016 17:45','DD-MM-YYYY hh24:mi'),3,66);
 INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('07-08-2015 12:15','DD-MM-YYYY hh24:mi'),6,72);
+
