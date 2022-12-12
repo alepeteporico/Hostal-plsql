@@ -41,3 +41,19 @@ EXEC ActividadInexistente ('A003');
 ---Funciona correctamente
 EXEC ActividadInexistente ('A001');
 
+---Procedimiento que, ingresando codigo de actividad Y NIF de persona Comprueba si la actividad se realizó en régimen de todo incluido
+CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad Actividades.Codigo%type, v_codcliente Estancias.NIFCliente%type)
+IS
+    v_codreg    regimenes.CodigoRegimen%type;
+BEGIN
+    SELECT CodigoRegimen INTO v_codreg
+    FROM Estancias
+    WHERE NIFCliente=v_codcliente
+    AND WHERE Codigo = (
+        SELECT CodigoEstancia
+        FROM ActividadesRealizadas
+        WHERE CodigoActividad=v_codactividad
+    );
+
+END;
+/
