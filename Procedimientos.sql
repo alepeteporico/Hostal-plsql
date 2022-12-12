@@ -11,8 +11,6 @@ BEGIN
     WHERE NIF=v_codcliente;
     IF v_cliente=0 THEN
         RAISE_APPLICATION_ERROR(-20001,'El cliente especificado no existe');
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('El cliente existe');
     END IF;
 END;
 /
@@ -33,8 +31,6 @@ BEGIN
     WHERE codigo=v_codactividad;
     IF v_actividad=0 THEN
         RAISE_APPLICATION_ERROR(-20001,'La actividad especificada no existe');
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('La actividad existe');
     END IF;
 END;
 /
@@ -44,3 +40,4 @@ EXEC ActividadInexistente ('A003');
 
 ---Funciona correctamente
 EXEC ActividadInexistente ('A001');
+
