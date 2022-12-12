@@ -1,6 +1,10 @@
 /* Procedimientos */
 
-/* 1. Realiza una función ComprobarPago que reciba como parámetros un código de cliente y un código de actividad y devuelva un TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Debes controlar las siguientes excepciones: Cliente inexistente, Actividad Inexistente, Actividad realizada en régimen de Todo Incluido y El cliente nunca ha realizado esa actividad.*/
+/* 1. Realiza una función ComprobarPago que reciba como parámetros un código de cliente y un código de actividad y devuelva un TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Debes controlar las siguientes excepciones: 
+- Cliente inexistente. 
+- Actividad Inexistente. 
+- Actividad realizada en régimen de Todo Incluido.
+- El cliente nunca ha realizado esa actividad.*/
 
 ---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
 CREATE OR REPLACE PROCEDURE ClienteInexistente (v_codcliente personas.NIF%type) IS
@@ -41,19 +45,22 @@ EXEC ActividadInexistente ('A003');
 ---Funciona correctamente
 EXEC ActividadInexistente ('A001');
 
----Procedimiento que, ingresando codigo de actividad Y NIF de persona Comprueba si la actividad se realizó en régimen de todo incluido
-CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad Actividades.Codigo%type, v_codcliente Estancias.NIFCliente%type)
-IS
-    v_codreg    regimenes.CodigoRegimen%type;
-BEGIN
-    SELECT CodigoRegimen INTO v_codreg
-    FROM Estancias
-    WHERE NIFCliente=v_codcliente
-    AND WHERE Codigo = (
-        SELECT CodigoEstancia
-        FROM ActividadesRealizadas
-        WHERE CodigoActividad=v_codactividad
-    );
 
+---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
+CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.codigo%type) IS
+    v_todoIncluido NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_todoIncluido
+    FROM actividadesrealizadas
+    WHERE codigoactividad=v_codactividad AND codigoestancia=(SELECT codigo FROM estancias WHERE codigoregimen = 'TI');
+    IF v_todoIncluido>0 THEN
+        RAISE_APPLICATION_ERROR(-20001,'La actividad especificada se ha realizado en regimen de Todo Incluido');
+    END IF;
 END;
 /
+
+---FALLO
+EXEC ActividadTodoIncluido ('A001');
+
+---Funciona correctamente
+EXEC ActividadTodoIncluido ('A032');
