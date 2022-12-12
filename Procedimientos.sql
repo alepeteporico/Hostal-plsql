@@ -1,6 +1,6 @@
 CREATE OR REPLACE PROCEDURE ClienteInexistente (v_codcliente personas.NIF%type)
 IS
-    ind_existe  number=0;
+    ind_existe  number:=0;
 BEGIN
     SELECT count(*) into ind_existe
     FROM personas
@@ -13,7 +13,7 @@ END ClienteInexistente;
 
 CREATE OR REPLACE PROCEDURE ActividadInexistente (v_codactividad Actividades.Codigo%type)
 IS
-    ind_existe  number=0;
+    ind_existe  number:=0;
 BEGIN
     SELECT count(*) into ind_existe
     FROM personas
