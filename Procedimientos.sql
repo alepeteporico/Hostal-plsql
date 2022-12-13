@@ -52,7 +52,7 @@ CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.co
 BEGIN
     SELECT COUNT(*) INTO v_todoIncluido
     FROM actividadesrealizadas
-    WHERE codigoactividad=v_codactividad AND codigoestancia=(SELECT codigo FROM estancias WHERE codigoregimen = 'TI');
+    WHERE codigoactividad=v_codactividad AND codigoestancia=(SELECT COUNT(codigo) FROM estancias WHERE codigoregimen = 'TI');
     IF v_todoIncluido>0 THEN
         RAISE_APPLICATION_ERROR(-20001,'La actividad especificada se ha realizado en regimen de Todo Incluido');
     END IF;
@@ -79,3 +79,40 @@ END;
 /
 
 EXEC ClienteRealizaActividad ('69191424H', 'B302');
+
+
+---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
+CREATE OR REPLACE PROCEDURE ClientePagoActividad (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
+    v_pago NUMBER;
+BEGIN
+    SELECT COUNT(codigoactividad) INTO v_pago
+    FROM actividadesrealizadas
+    WHERE abonado > '0' AND codigoactividad=v_codactividad AND codigoestancia = (SELECT codigo FROM estancias WHERE nifcliente=v_codcliente)
+    ORDER BY fecha ASC
+    FETCH FIRST 1 ROWS ONLY;
+    IF v_pago IS NULL THEN
+        RETURN FALSE;
+    ELSE
+        RETURN TRUE;
+    END IF;
+END;
+/
+
+---FALLO
+EXEC ClientePagoActividad ('69191424H', 'B302');
+
+---Funciona correctamente
+EXEC ClientePagoActividad ('69191424H', 'B301');
+
+
+
+---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
+CREATE OR REPLACE PROCEDURE ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
+    v_pago NUMBER;
+BEGIN
+    ClienteInexistente(v_codcliente);
+    ActividadInexistente(v_codactividad);
+    ActividadTodoIncluido(v_codactividad);
+    ClienteRealizaActividad(v_codcliente, v_codactividad);
+    SELECT count(*) INTO v_pago
+    FROM pagos WHERE nifcliente=v_codcliente AND codigoactividad=v_codactividad AND fecha=(SELECT MAX(fecha) FROM pagos WHERE nifcliente=v_codcliente AND codigoactividad=v_codactividad);
