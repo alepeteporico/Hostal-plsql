@@ -135,3 +135,30 @@ EXEC ComprobarPago ('54890869P','A999'); ---false
 
 
 ---PROCEDIMIENTO FINALIZADO
+
+
+---MISMO PROCEDIMIENTO ES POSTGRESQL
+
+---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
+CREATE OR REPLACE FUNCTION ClienteInexistente (v_codcliente personas.nif%type) 
+RETURNS BOOLEAN AS $ClienteInexistente$
+DECLARE
+    v_codigo personas.nif%type;
+BEGIN
+    SELECT nif INTO v_codigo
+    FROM personas
+    WHERE nif=v_codcliente;
+    IF v_codigo IS NULL THEN
+        RAISE EXCEPTION 'El cliente especificado no existe';
+    ELSE
+        RETURN TRUE;
+    END IF;
+END;
+$ClienteInexistente$ LANGUAGE plpgsql;
+
+---FALLO
+SELECT ClienteInexistente ('32061164S');
+
+---Funciona correctamente
+SELECT ClienteInexistente ('06852683V');
+
