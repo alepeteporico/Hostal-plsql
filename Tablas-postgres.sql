@@ -8,7 +8,7 @@ CREATE TABLE regimenes(
 	codigo			VARCHAR(9),
 	Nombre			VARCHAR(35),
 	CONSTRAINT pk_regimenes PRIMARY KEY (codigo),
-	CONSTRAINT contenido_codigo CHECK( codigo C ('AD','MP','PC','TI'))
+	CONSTRAINT contenido_codigo CHECK( codigo IN ('AD','MP','PC','TI'))
 );
 
 CREATE TABLE tipos_de_habitacion(
@@ -48,7 +48,7 @@ CREATE TABLE estancias (
 	CONSTRAINT fk_estanciasnumhab FOREIGN KEY (numerohabitacion) REFERENCES habitaciones(numero),
 	CONSTRAINT fk_estanciasnifresp FOREIGN KEY (nifresponsable) REFERENCES personas(nif),
 	CONSTRAINT fk_estanciasnifcli FOREIGN KEY (nifcliente) REFERENCES personas(nif),
-	CONSTRAINT fk_estanciasregim FOREIGN KEY (codigORegimen) REFERENCES regimenes(codigo),
+	CONSTRAINT fk_estanciasregim FOREIGN KEY (codigoregimen) REFERENCES regimenes(codigo),
 	CONSTRAINT fecha_salida CHECK(to_char(fecha_fIN,'hh24:mi')<='21:00')
 );
 
@@ -60,8 +60,8 @@ CREATE TABLE tarifas(
 	preciopordia DECIMAL(6,2),
 	CONSTRAINT pk_tarifas PRIMARY KEY (codigo),
 	CONSTRAINT fk_tarifastipo FOREIGN KEY (codigotipohabitacion) REFERENCES tipos_de_habitacion(codigo),
-	CONSTRAINT fk_tarifasregimenes FOREIGN KEY (codigORegimen) REFERENCES regimenes(codigo),
-	CONSTRAINT fk_tarifastempOR FOREIGN KEY (codigotempORada) REFERENCES temporadas(codigo)
+	CONSTRAINT fk_tarifasregimenes FOREIGN KEY (codigoregimen) REFERENCES regimenes(codigo),
+	CONSTRAINT fk_tarifastempOR FOREIGN KEY (codigotemporada) REFERENCES temporadas(codigo)
 );
 
 CREATE TABLE facturas (
@@ -82,18 +82,6 @@ CREATE TABLE gastos_extras (
 	CONSTRAINT fk_gastext FOREIGN KEY (codigoestancia) REFERENCES estancias(codigo)
 );
 
-CREATE TABLE actividadesrealizadas (
-	codigoestancia VARCHAR(9),
-	codigoactividad	VARCHAR(9),
-	fecha DATE,
-	numpersonas	DECIMAL(6,2) DEFAULT 1,
-	abonado	VARCHAR (1) DEFAULT 'N',
-	CONSTRAINT pk_actrealizadas PRIMARY KEY (codigoestancia, codigoactividad, fecha),
-	CONSTRAINT fk_actrealestan FOREIGN KEY (codigoestancia) REFERENCES estancias(codigo),
-	CONSTRAINT fk_actrealact FOREIGN KEY (codigoactividad) REFERENCES actividades(codigo),
-  	CONSTRAINT descanso_activs CHECK(to_char(fecha,'DAY') NOT LIKE '%MON%' and to_char(fecha,'hh24:mi') NOT BETWEEN '23:00' and '05:00')
-);
-
 CREATE TABLE actividades (
 	codigo VARCHAR(9),
 	nombre VARCHAR(35),
@@ -104,6 +92,18 @@ CREATE TABLE actividades (
 	CONSTRAINT pk_actividades PRIMARY KEY (codigo),
 	CONSTRAINT codigo_valido CHECK(codigo ~ '[A-Z]{1}[0-9]{3}.*'),
 	CONSTRAINT comisionhotel_INferiOR CHECK(comisionhotel <= precioporpersona*0.25)
+);
+
+CREATE TABLE actividadesrealizadas (
+	codigoestancia VARCHAR(9),
+	codigoactividad	VARCHAR(9),
+	fecha DATE,
+	numpersonas	DECIMAL(6,2) DEFAULT 1,
+	abonado	VARCHAR (1) DEFAULT 'N',
+	CONSTRAINT pk_actrealizadas PRIMARY KEY (codigoestancia, codigoactividad, fecha),
+	CONSTRAINT fk_actrealestan FOREIGN KEY (codigoestancia) REFERENCES estancias(codigo),
+	CONSTRAINT fk_actrealact FOREIGN KEY (codigoactividad) REFERENCES actividades(codigo),
+  	CONSTRAINT descanso_activs CHECK(to_char(fecha,'DAY') NOT LIKE '%MON%' and to_char(fecha,'hh24:mi') NOT BETWEEN '23:00' and '05:00')
 );
 
 ----------------------------------------------------------------------------------------
