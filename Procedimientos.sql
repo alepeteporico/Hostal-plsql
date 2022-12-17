@@ -82,25 +82,24 @@ EXEC ClienteRealizaActividad ('69191424H', 'B302');
 
 
 ---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
-CREATE OR REPLACE PROCEDURE PagoActividad (v_codcliente personas.NIF%TYPE, v_codactividad actividades.codigo%TYPE) 
-IS
-    CURSOR c_actividad IS
-        SELECT abonado
+CREATE OR REPLACE PROCEDURE ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type) IS
+    CURSOR c_abonado IS
+        SELECT *
         FROM actividadesrealizadas
         WHERE codigoestancia = (SELECT codigo FROM estancias WHERE nifcliente=v_codcliente) AND codigoactividad=v_codactividad
         ORDER BY fecha DESC
         FETCH FIRST 1 ROWS ONLY;
-    v_actividad c_actividad%ROWTYPE;
+    v_abonada actividadesrealizadas.abonado%type;
 BEGIN
-    FOR v_actividad IN c_actividad LOOP
-        IF v_abonado = 'S' THEN
-            DBMS_OUTPUT.PUT_LINE('TRUE');
-        ELSE
-            DBMS_OUTPUT.PUT_LINE('FALSE');
-        END IF;
-    END LOOP;
+    IF v_abonada='S'
+    THEN
+        DBMS_OUTPUT.PUT_LINE('TRUE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('FALSE');
+    END IF;
 END;
 /
+
 
 ---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
 CREATE OR REPLACE PROCEDURE ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
@@ -110,8 +109,9 @@ BEGIN
     ActividadInexistente(v_codactividad);
     ActividadTodoIncluido(v_codactividad);
     ClienteRealizaActividad(v_codcliente, v_codactividad);
-    SELECT count(*) INTO v_pago
-    FROM pagos WHERE nifcliente=v_codcliente AND codigoactividad=v_codactividad AND fecha=(SELECT MAX(fecha) FROM pagos WHERE nifcliente=v_codcliente AND codigoactividad=v_codactividad);
+    ActividadAbonada(v_codcliente, v_codactividad);
+END;
+/
     
     
     
