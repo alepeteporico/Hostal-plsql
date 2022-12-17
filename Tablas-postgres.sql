@@ -32,7 +32,7 @@ CREATE TABLE personas(
 	localidad VARCHAR(35) CONSTRAINT localidad_obligatorio NOT NULL,
 	CONSTRAINT pk_personas PRIMARY KEY (nif),
 	CONSTRAINT nif_valido CHECK( nif ~ '[0-9]{8}[A-Z]{1}' OR nif ~ '[K,L,M,X,Y,Z]{1}[0-9]{7}[A-Z]{1}'),
-  	CONSTRAINT localidades CHECK( localidad LIKE '%(Salamanca)' OR localidad LIKE '%(?vila)' OR localidad LIKE '%(Madrid)')
+  	CONSTRAINT localidades CHECK( localidad LIKE '%(Salamanca)' OR localidad LIKE '%(Avila)' OR localidad LIKE '%(Madrid)')
 );
 
 CREATE TABLE estancias (
@@ -129,6 +129,43 @@ INSERT INTO tipos_de_habitacion VALUES ('01','Habitacion INdividual');
 INSERT INTO tipos_de_habitacion VALUES ('02','Habitacion doble');
 INSERT INTO tipos_de_habitacion VALUES ('03','Habitacion triple');
 
+---Habitaciones
+INSERT INTO habitaciones VALUES ('00','01');
+INSERT INTO habitaciones VALUES ('01','02');
+INSERT INTO habitaciones VALUES ('02','03');
+INSERT INTO habitaciones VALUES ('03','01');
+INSERT INTO habitaciones VALUES ('04','02');
+INSERT INTO habitaciones VALUES ('05','02');
+INSERT INTO habitaciones VALUES ('06','02');
+INSERT INTO habitaciones VALUES ('07','02');
+INSERT INTO habitaciones VALUES ('08','03');
+INSERT INTO habitaciones VALUES ('09','02');
+INSERT INTO habitaciones VALUES ('10','01');
+INSERT INTO habitaciones VALUES ('11','03');
+
+---Personas
+INSERT INTO personas VALUES ('54890865P','Alvaro','Rodriguez Marquez','C\ Alemania n 19','Madrid (Madrid)');
+INSERT INTO personas VALUES ('40687067K','Aitor','Leon Delgado','Ciudad Blanca Blq 16 1-D','Adanero (Avila)');
+INSERT INTO personas VALUES ('77399071T','Virginia','Leon Delgado','Ciudad Blanca Blq 16 1-D','Muiopepe (Avila)');
+INSERT INTO personas VALUES ('69191424H','Antonio Agustin','Fernandez Melendez','C\Armero n 19','Muñico (Avila)');
+INSERT INTO personas VALUES ('36059752F','Antonio','Melendez Delgado','C\Armero n 18','Navadijos (Avila)');
+INSERT INTO personas VALUES ('10402498N','Carlos','Mejias Calatrava','C\ Francisco de Rioja n 9','Abusejo (Salamanca)');
+INSERT INTO personas VALUES ('10950967T','Ana','Gutierrez Bando','C\ Burgos n 3','Alaraz (Salamanca)');
+INSERT INTO personas VALUES ('88095695Z','Adrian','Garcia Guerra','C\ Nueva n 14','Mozarbez (Salamanca)');
+INSERT INTO personas VALUES ('95327640T','Juan Carlos','Romero Diaz','C\ San LORenzo n 22','Ajalvir (Madrid)');
+INSERT INTO personas VALUES ('06852683V','Francisco','Franco Giraldez','AAVV Rosales n 1','Leganes (Madrid)');
+
+
+---Estancias
+INSERT INTO estancias VALUES ('00',to_DATE('11-03-2016 12:00','DD-MM-YYYY hh24:mi'),to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'),'00','54890865P','54890865P','AD');
+INSERT INTO estancias VALUES ('01',to_DATE('19-05-2015 17:00','DD-MM-YYYY hh24:mi'),to_DATE('25-05-2015 17:00','DD-MM-YYYY hh24:mi'),'10','10950967T','10950967T','MP');
+INSERT INTO estancias VALUES ('02',to_DATE('20-09-2015 13:30','DD-MM-YYYY hh24:mi'),to_DATE('21-09-2015 13:30','DD-MM-YYYY hh24:mi'),'03','10402498N','10402498N','AD');
+INSERT INTO estancias VALUES ('03',to_DATE('14-03-2015 11:15','DD-MM-YYYY hh24:mi'),to_DATE('16-03-2015 11:15','DD-MM-YYYY hh24:mi'),'02','95327640T','95327640T','MP');
+INSERT INTO estancias VALUES ('04',to_DATE('30-07-2015 18:00','DD-MM-YYYY hh24:mi'),to_DATE('11-08-2015 18:00','DD-MM-YYYY hh24:mi'),'09','06852683V','06852683V','TI');
+INSERT INTO estancias VALUES ('05',to_DATE('09-01-2016 16:35','DD-MM-YYYY hh24:mi'),to_DATE('12-01-2015 16:35','DD-MM-YYYY hh24:mi'),'05','40687067K','40687067K','MP');
+INSERT INTO estancias VALUES ('06',to_DATE('26-12-2015 19:50','DD-MM-YYYY hh24:mi'),to_DATE('01-01-2016 19:50','DD-MM-YYYY hh24:mi'),'07','77399071T','77399071T','PC');
+INSERT INTO estancias VALUES ('07',to_DATE('22-02-2016 20:20','DD-MM-YYYY hh24:mi'),to_DATE('29-02-2016 20:20','DD-MM-YYYY hh24:mi'),'04','69191424H','69191424H','PC');
+
 
 ---Tarifas
 INSERT INTO tarifas VALUES ('00','01','01','AD',50);
@@ -169,45 +206,6 @@ INSERT INTO tarifas VALUES ('34','03','02','TI',87);
 INSERT INTO tarifas VALUES ('35','03','03','TI',70);
 
 
----Habitaciones
-INSERT INTO habitaciones VALUES ('00','01');
-INSERT INTO habitaciones VALUES ('01','02');
-INSERT INTO habitaciones VALUES ('02','03');
-INSERT INTO habitaciones VALUES ('03','01');
-INSERT INTO habitaciones VALUES ('04','02');
-INSERT INTO habitaciones VALUES ('05','02');
-INSERT INTO habitaciones VALUES ('06','02');
-INSERT INTO habitaciones VALUES ('07','02');
-INSERT INTO habitaciones VALUES ('08','03');
-INSERT INTO habitaciones VALUES ('09','02');
-INSERT INTO habitaciones VALUES ('10','01');
-INSERT INTO habitaciones VALUES ('11','03');
-
-
----Personas
-INSERT INTO personas VALUES ('54890865P','Alvaro','Rodriguez Marquez','C\ Alemania n?19','Madrid (Madrid)');
-INSERT INTO personas VALUES ('40687067K','Aitor','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Adanero (?vila)');
-INSERT INTO personas VALUES ('77399071T','Virginia','Leon Delgado','Ciudad Blanca Blq 16 1?-D','Mu?opepe (?vila)');
-INSERT INTO personas VALUES ('69191424H','Antonio Agustin','Fernandez Melendez','C\Armero n? 19','Mu?ico (?vila)');
-INSERT INTO personas VALUES ('36059752F','Antonio','Melendez Delgado','C\Armero n? 18','Navadijos (?vila)');
-INSERT INTO personas VALUES ('10402498N','Carlos','Mejias Calatrava','C\ Francisco de Rioja n? 9','Abusejo (Salamanca)');
-INSERT INTO personas VALUES ('10950967T','Ana','Gutierrez Bando','C\ Burgos n? 3','Alaraz (Salamanca)');
-INSERT INTO personas VALUES ('88095695Z','Adrian','Garcia Guerra','C\ Nueva n? 14','Moz?rbez (Salamanca)');
-INSERT INTO personas VALUES ('95327640T','Juan Carlos','Romero Diaz','C\ San LORenzo n? 22','Ajalvir (Madrid)');
-INSERT INTO personas VALUES ('06852683V','Francisco','Franco Giraldez','AAVV Rosales n? 1','Legan?s (Madrid)');
-
-
----Estancias
-INSERT INTO estancias VALUES ('00',to_DATE('11-03-2016 12:00','DD-MM-YYYY hh24:mi'),to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'),'00','54890865P','54890865P','AD');
-INSERT INTO estancias VALUES ('01',to_DATE('19-05-2015 17:00','DD-MM-YYYY hh24:mi'),to_DATE('25-05-2015 17:00','DD-MM-YYYY hh24:mi'),'10','10950967T','10950967T','MP');
-INSERT INTO estancias VALUES ('02',to_DATE('20-09-2015 13:30','DD-MM-YYYY hh24:mi'),to_DATE('21-09-2015 13:30','DD-MM-YYYY hh24:mi'),'03','10402498N','10402498N','AD');
-INSERT INTO estancias VALUES ('03',to_DATE('14-03-2015 11:15','DD-MM-YYYY hh24:mi'),to_DATE('16-03-2015 11:15','DD-MM-YYYY hh24:mi'),'02','95327640T','95327640T','MP');
-INSERT INTO estancias VALUES ('04',to_DATE('30-07-2015 18:00','DD-MM-YYYY hh24:mi'),to_DATE('11-08-2015 18:00','DD-MM-YYYY hh24:mi'),'09','06852683V','06852683V','TI');
-INSERT INTO estancias VALUES ('05',to_DATE('09-01-2016 16:35','DD-MM-YYYY hh24:mi'),to_DATE('12-01-2015 16:35','DD-MM-YYYY hh24:mi'),'05','40687067K','40687067K','MP');
-INSERT INTO estancias VALUES ('06',to_DATE('26-12-2015 19:50','DD-MM-YYYY hh24:mi'),to_DATE('01-01-2016 19:50','DD-MM-YYYY hh24:mi'),'07','77399071T','77399071T','PC');
-INSERT INTO estancias VALUES ('07',to_DATE('22-02-2016 20:20','DD-MM-YYYY hh24:mi'),to_DATE('29-02-2016 20:20','DD-MM-YYYY hh24:mi'),'04','69191424H','69191424H','PC');
-
-
 ---Facturas
 INSERT INTO facturas VALUES ('00','00',to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'));
 INSERT INTO facturas VALUES ('01','02',to_DATE('21-09-2015 13:30','DD-MM-YYYY hh24:mi'));
@@ -218,18 +216,18 @@ INSERT INTO facturas VALUES ('05','01',to_DATE('25-05-2015 17:00','DD-MM-YYYY hh
 
 
 ---Gastos Extras
-INSERT INTO gastos_extra VALUES ('00','03',to_DATE('15-03-2015 18:23','DD-MM-YYYY hh24:mi'),'Bolos',7);
-INSERT INTO gastos_extra VALUES ('01','02',to_DATE('20-09-2015 19:15','DD-MM-YYYY hh24:mi'),'Centro de pasatiempo de mascotas',12);
-INSERT INTO gastos_extra VALUES ('02','01',to_DATE('23-05-2015 12:40','DD-MM-YYYY hh24:mi'),'Piscina privada',2);
-INSERT INTO gastos_extra VALUES ('03','01',to_DATE('23-05-2015 17:50','DD-MM-YYYY hh24:mi'),'Wifi',2);
-INSERT INTO gastos_extra VALUES ('04','03',to_DATE('15-03-2015 20:00','DD-MM-YYYY hh24:mi'),'Masajes',8);
-INSERT INTO gastos_extra VALUES ('05','05',to_DATE('11-01-2016 16:00','DD-MM-YYYY hh24:mi'),'Spa',8);
-INSERT INTO gastos_extra VALUES ('06','07',to_DATE('24-02-2016 16:45','DD-MM-YYYY hh24:mi'),'Alquiler de bicicletas',5);
-INSERT INTO gastos_extra VALUES ('07','02',to_DATE('20-09-2015 16:00','DD-MM-YYYY hh24:mi'),'Television',2);
-INSERT INTO gastos_extra VALUES ('08','04',to_DATE('02-08-2015 13:30','DD-MM-YYYY hh24:mi'),'Rellenar minibar', 15);
-INSERT INTO gastos_extra VALUES ('09','00',to_DATE('12-03-2016 18:15','DD-MM-YYYY hh24:mi'),'Aire acondicionado', 6);
-INSERT INTO gastos_extra VALUES ('10','06',to_DATE('28-12-2015 19:23','DD-MM-YYYY hh24:mi'),'Telefono',3);
-INSERT INTO gastos_extra VALUES ('11','02',to_DATE('21-09-2015 10:00','DD-MM-YYYY hh24:mi'),'Alquiler de pistas',2);
+INSERT INTO gastos_extras VALUES ('00','03',to_DATE('15-03-2015 18:23','DD-MM-YYYY hh24:mi'),'Bolos',7);
+INSERT INTO gastos_extras VALUES ('01','02',to_DATE('20-09-2015 19:15','DD-MM-YYYY hh24:mi'),'Centro de pasatiempo de mascotas',12);
+INSERT INTO gastos_extras VALUES ('02','01',to_DATE('23-05-2015 12:40','DD-MM-YYYY hh24:mi'),'Piscina privada',2);
+INSERT INTO gastos_extras VALUES ('03','01',to_DATE('23-05-2015 17:50','DD-MM-YYYY hh24:mi'),'Wifi',2);
+INSERT INTO gastos_extras VALUES ('04','03',to_DATE('15-03-2015 20:00','DD-MM-YYYY hh24:mi'),'Masajes',8);
+INSERT INTO gastos_extras VALUES ('05','05',to_DATE('11-01-2016 16:00','DD-MM-YYYY hh24:mi'),'Spa',8);
+INSERT INTO gastos_extras VALUES ('06','07',to_DATE('24-02-2016 16:45','DD-MM-YYYY hh24:mi'),'Alquiler de bicicletas',5);
+INSERT INTO gastos_extras VALUES ('07','02',to_DATE('20-09-2015 16:00','DD-MM-YYYY hh24:mi'),'Television',2);
+INSERT INTO gastos_extras VALUES ('08','04',to_DATE('02-08-2015 13:30','DD-MM-YYYY hh24:mi'),'Rellenar minibar', 15);
+INSERT INTO gastos_extras VALUES ('09','00',to_DATE('12-03-2016 18:15','DD-MM-YYYY hh24:mi'),'Aire acondicionado', 6);
+INSERT INTO gastos_extras VALUES ('10','06',to_DATE('28-12-2015 19:23','DD-MM-YYYY hh24:mi'),'Telefono',3);
+INSERT INTO gastos_extras VALUES ('11','02',to_DATE('21-09-2015 10:00','DD-MM-YYYY hh24:mi'),'Alquiler de pistas',2);
 
 ---Actividades
 INSERT INTO actividades VALUES ('A001','Aventura','Red de cuevas naturales visitables-Barrancos',15,3.74,0);
