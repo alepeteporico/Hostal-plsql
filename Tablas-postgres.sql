@@ -86,12 +86,12 @@ CREATE TABLE actividadesrealizadas (
 	codigoestancia VARCHAR(9),
 	codigoactividad	VARCHAR(9),
 	fecha DATE,
-	numpersonas	DECIMAL(6,2) default 1,
-	abonado	DECIMAL(6,2),
+	numpersonas	DECIMAL(6,2) DEFAULT 1,
+	abonado	VARCHAR (1) DEFAULT 'N',
 	CONSTRAINT pk_actrealizadas PRIMARY KEY (codigoestancia, codigoactividad, fecha),
 	CONSTRAINT fk_actrealestan FOREIGN KEY (codigoestancia) REFERENCES estancias(codigo),
 	CONSTRAINT fk_actrealact FOREIGN KEY (codigoactividad) REFERENCES actividades(codigo),
-  	CONSTRAINT descanso_activs CHECK(to_char(fecha,'DAY') NOT LIKE '%MON%' and to_char(fecha,'hh24:mi') NOT between '23:00' and '05:00')
+  	CONSTRAINT descanso_activs CHECK(to_char(fecha,'DAY') NOT LIKE '%MON%' and to_char(fecha,'hh24:mi') NOT BETWEEN '23:00' and '05:00')
 );
 
 CREATE TABLE actividades (
@@ -238,11 +238,11 @@ INSERT INTO actividades VALUES ('B302','Hipica','Montar a caballo durante 2 hORa
 INSERT INTO actividades VALUES ('A032','Tiro con Arco','4?u desperfecto de flecha',12,2,4);
 
 ---Actividades Realizadas
-INSERT INTO actividadesrealizadas VALUES ('01','A001',to_DATE('20-05-2015 17:30','DD-MM-YYYY hh24:mi'),2,30);
-INSERT INTO actividadesrealizadas VALUES ('07','C093',to_DATE('25-02-2016 18:00','DD-MM-YYYY hh24:mi'),5,375);
-INSERT INTO actividadesrealizadas VALUES ('06','B302',to_DATE('29-12-2015 12:00','DD-MM-YYYY hh24:mi'),1,22);
-INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('04-08-2015 11:30','DD-MM-YYYY hh24:mi'),2,24);
-INSERT INTO actividadesrealizadas VALUES ('01','C093',to_DATE('21-05-2015 17:00','DD-MM-YYYY hh24:mi'),2,150);
-INSERT INTO actividadesrealizadas VALUES ('05','A001',to_DATE('10-01-2016 16:15','DD-MM-YYYY hh24:mi'),4,60);
-INSERT INTO actividadesrealizadas VALUES ('07','B302',to_DATE('28-02-2016 17:45','DD-MM-YYYY hh24:mi'),3,66);
-INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('07-08-2015 12:15','DD-MM-YYYY hh24:mi'),6,72);
+INSERT INTO actividadesrealizadas VALUES ('01','A001',to_DATE('20-05-2015 17:30','DD-MM-YYYY hh24:mi'),2,'S');
+INSERT INTO actividadesrealizadas VALUES ('07','C093',to_DATE('25-02-2016 18:00','DD-MM-YYYY hh24:mi'),5,'N');
+INSERT INTO actividadesrealizadas VALUES ('06','B302',to_DATE('29-12-2015 12:00','DD-MM-YYYY hh24:mi'),1,'N');
+INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('04-08-2015 11:30','DD-MM-YYYY hh24:mi'),2,'S');
+INSERT INTO actividadesrealizadas VALUES ('01','C093',to_DATE('21-05-2015 17:00','DD-MM-YYYY hh24:mi'),2,'N');
+INSERT INTO actividadesrealizadas VALUES ('05','A001',to_DATE('10-01-2016 16:15','DD-MM-YYYY hh24:mi'),4,'S');
+INSERT INTO actividadesrealizadas VALUES ('07','B302',to_DATE('28-02-2016 17:45','DD-MM-YYYY hh24:mi'),3,'N');
+INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('07-08-2015 12:15','DD-MM-YYYY hh24:mi'),6,'S');
