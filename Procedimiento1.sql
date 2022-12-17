@@ -162,3 +162,28 @@ SELECT ClienteInexistente ('32061164S');
 ---Funciona correctamente
 SELECT ClienteInexistente ('06852683V');
 
+--Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
+CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
+RETURNS BOOLEAN AS $ActividadInexistente$
+DECLARE
+    c_codigo CURSOR FOR
+        SELECT *
+        FROM actividades
+        WHERE codigo=v_codactividad;
+    v_codigo actividades.codigo%type;
+BEGIN
+    FOR v_codigo IN c_codigo LOOP
+        RETURN TRUE;
+    END LOOP;
+    RAISE EXCEPTION 'La actividad especificada no existe';
+END;
+$ActividadInexistente$ LANGUAGE plpgsql;
+
+
+---FALLO
+SELECT ActividadInexistente ('A003');
+
+---Funciona correctamente
+SELECT ActividadInexistente ('A032');
+
+
