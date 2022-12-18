@@ -110,29 +110,31 @@ CREATE TABLE actividadesrealizadas (
 
 
 
-/// INTRODUCCIÓN DE DATOS
+----------------------------------------------------------------------------------------
+---INSERCIÓN DE DATOS
+----------------------------------------------------------------------------------------
 
--//Temporadas	
 
+---Temporadas -- codigo, nombre
 INSERT INTO temporadas VALUES ('01','Baja');
 INSERT INTO temporadas VALUES ('02','Alta');
 INSERT INTO temporadas VALUES ('03','Especial');
 
 
--//Regimenes	
+---Regimenes -- codigo, nombre	
 INSERT INTO regimenes VALUES ('AD','Alojamiento y Desayuno');
 INSERT INTO regimenes VALUES ('MP','Media pension');
 INSERT INTO regimenes VALUES ('PC','Pension completa');
 INSERT INTO regimenes VALUES ('TI','Todo incluido');
 
 
--//Tipos de habitacion	
+---Tipos de habitacion -- codigo, nombre	
 INSERT INTO tipos_de_habitacion VALUES ('01','Habitacion individual');
 INSERT INTO tipos_de_habitacion VALUES ('02','Habitacion doble');
 INSERT INTO tipos_de_habitacion VALUES ('03','Habitacion triple');
 
 
--//Tarifas -- codigo, codigotipohabitacion, codigotemporada, codigoregimen, preciopordia
+---Tarifas -- codigo, codigotipohabitacion, codigotemporada, codigoregimen, preciopordia
 INSERT INTO tarifas VALUES ('00','01','01','AD',50);
 INSERT INTO tarifas VALUES ('01','01','02','AD',70);
 INSERT INTO tarifas VALUES ('02','01','03','AD',60);
@@ -171,7 +173,7 @@ INSERT INTO tarifas VALUES ('34','03','02','TI',87);
 INSERT INTO tarifas VALUES ('35','03','03','TI',70);
 
 
--//Habitaciones -- numero, codigotipo
+---Habitaciones -- numero, codigotipo
 INSERT INTO habitaciones VALUES ('00','01');
 INSERT INTO habitaciones VALUES ('01','02');
 INSERT INTO habitaciones VALUES ('02','03');
@@ -186,7 +188,7 @@ INSERT INTO habitaciones VALUES ('10','01');
 INSERT INTO habitaciones VALUES ('11','03');
 
 
--//Personas -- nif, nombre, apellidos, direccion, localidad
+---Personas -- nif, nombre, apellidos, direccion, localidad
 INSERT INTO personas VALUES ('54890865P','Alvaro','Rodriguez Marquez','C\ Alemania nº19','Madrid (Madrid)');
 INSERT INTO personas VALUES ('40687067K','Aitor','Leon Delgado','Ciudad Blanca Blq 16 1º-D','Adanero (Ávila)');
 INSERT INTO personas VALUES ('77399071T','Virginia','Leon Delgado','Ciudad Blanca Blq 16 1º-D','Muñopepe (Ávila)');
@@ -199,7 +201,7 @@ INSERT INTO personas VALUES ('95327640T','Juan Carlos','Romero Diaz','C\ San Lor
 INSERT INTO personas VALUES ('06852683V','Francisco','Franco Giraldez','AAVV Rosales nº 1','Leganés (Madrid)');
 
 
--//Estancias -- codigo, fecha inicio, fecha fin, numerohabitacion, nifresponsable, nifcliente, codigoregimen
+---Estancias -- codigo, fecha inicio, fecha fin, numerohabitacion, nifresponsable, nifcliente, codigoregimen
 INSERT INTO estancias VALUES ('00',to_DATE('11-03-2016 12:00','DD-MM-YYYY hh24:mi'),to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'),'00','54890865P','54890865P','AD');
 INSERT INTO estancias VALUES ('01',to_DATE('19-05-2015 17:00','DD-MM-YYYY hh24:mi'),to_DATE('25-05-2015 17:00','DD-MM-YYYY hh24:mi'),'10','10950967T','10950967T','MP');
 INSERT INTO estancias VALUES ('02',to_DATE('20-09-2015 13:30','DD-MM-YYYY hh24:mi'),to_DATE('21-09-2015 13:30','DD-MM-YYYY hh24:mi'),'03','10402498N','10402498N','AD');
@@ -210,7 +212,7 @@ INSERT INTO estancias VALUES ('06',to_DATE('26-12-2015 19:50','DD-MM-YYYY hh24:m
 INSERT INTO estancias VALUES ('07',to_DATE('22-02-2016 20:20','DD-MM-YYYY hh24:mi'),to_DATE('29-02-2016 20:20','DD-MM-YYYY hh24:mi'),'04','69191424H','69191424H','PC');
 
 
--//Facturas -- numero, codigoestancia, fecha
+---Facturas -- numero, codigoestancia, fecha
 INSERT INTO facturas VALUES ('00','00',to_DATE('13-03-2016 12:00','DD-MM-YYYY hh24:mi'));
 INSERT INTO facturas VALUES ('01','02',to_DATE('21-09-2015 13:30','DD-MM-YYYY hh24:mi'));
 INSERT INTO facturas VALUES ('02','04',to_DATE('11-08-2015 18:00','DD-MM-YYYY hh24:mi'));
@@ -219,7 +221,7 @@ INSERT INTO facturas VALUES ('04','05',to_DATE('12-01-2015 16:35','DD-MM-YYYY hh
 INSERT INTO facturas VALUES ('05','01',to_DATE('25-05-2015 17:00','DD-MM-YYYY hh24:mi'));
 
 
--//Gastos Extras -- codigogasto, codigoestancia, fecha, concepto, cuantia
+---Gastos Extras -- codigogasto, codigoestancia, fecha, concepto, cuantia
 INSERT INTO gastos_extra VALUES ('00','03',to_DATE('15-03-2015 18:23','DD-MM-YYYY hh24:mi'),'Bolos',7);
 INSERT INTO gastos_extra VALUES ('01','02',to_DATE('20-09-2015 19:15','DD-MM-YYYY hh24:mi'),'Centro de pasatiempo de mascotas',12);
 INSERT INTO gastos_extra VALUES ('02','01',to_DATE('23-05-2015 12:40','DD-MM-YYYY hh24:mi'),'Piscina privada',2);
@@ -234,14 +236,14 @@ INSERT INTO gastos_extra VALUES ('10','06',to_DATE('28-12-2015 19:23','DD-MM-YYY
 INSERT INTO gastos_extra VALUES ('11','02',to_DATE('21-09-2015 10:00','DD-MM-YYYY hh24:mi'),'Alquiler de pistas',2);
 
 
--//Actividades -- codigo, nombre, descripcion, precioporpersona, comisionhotel, costepersonaparahotel
+---Actividades -- codigo, nombre, descripcion, precioporpersona, comisionhotel, costepersonaparahotel
 INSERT INTO actividades VALUES ('A001','Aventura','Red de cuevas naturales visitables-Barrancos',15,3.74,0);
 INSERT INTO actividades VALUES ('C093','Curso','Espeleologia- iniciacion',75,13,10);
 INSERT INTO actividades VALUES ('B302','Hipica','Montar a caballo durante 2 horas',22,4,5);
 INSERT INTO actividades VALUES ('A032','Tiro con Arco','4?u desperfecto de flecha',12,2,4);
 
 
--//Actividadesrealizadas -- codigoestancia, codigoactividad, fecha, numpersonas, abonado
+---Actividadesrealizadas -- codigoestancia, codigoactividad, fecha, numpersonas, abonado
 INSERT INTO actividadesrealizadas VALUES ('01','A001',to_DATE('20-05-2015 17:30','DD-MM-YYYY hh24:mi'),2,'S');
 INSERT INTO actividadesrealizadas VALUES ('07','C093',to_DATE('25-02-2016 18:00','DD-MM-YYYY hh24:mi'),5,'N');
 INSERT INTO actividadesrealizadas VALUES ('06','B302',to_DATE('29-12-2015 12:00','DD-MM-YYYY hh24:mi'),1,'N');
@@ -250,4 +252,3 @@ INSERT INTO actividadesrealizadas VALUES ('01','C093',to_DATE('21-05-2015 17:00'
 INSERT INTO actividadesrealizadas VALUES ('05','A001',to_DATE('10-01-2016 16:15','DD-MM-YYYY hh24:mi'),4,'S');
 INSERT INTO actividadesrealizadas VALUES ('07','B302',to_DATE('28-02-2016 17:45','DD-MM-YYYY hh24:mi'),3,'N');
 INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('07-08-2015 12:15','DD-MM-YYYY hh24:mi'),6,'S');
-
