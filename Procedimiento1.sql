@@ -29,17 +29,17 @@ EXEC ClienteInexistente ('54890865P');
 ---Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
 CREATE OR REPLACE PROCEDURE ActividadInexistente (v_codactividad actividades.codigo%type)
 IS
-    CURSOR c_codigo IS
-        SELECT *
-        FROM actividades
-        WHERE codigo=v_codactividad;
-    v_codigo actividades.codigo%type;
+    v_actividad NUMBER;
 BEGIN
-    IF v_codigo IS NULL THEN
+    SELECT COUNT(*) INTO v_actividad
+    FROM actividades
+    WHERE codigo=v_codactividad;
+    IF v_actividad=0 THEN
         RAISE_APPLICATION_ERROR(-20002,'La actividad especificada no existe');
     END IF;
 END;
 /
+    
 
 ---FALLO
 EXEC ActividadInexistente ('A003');
@@ -49,18 +49,23 @@ EXEC ActividadInexistente ('A001');
 
 
 ---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
-CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.codigo%type) IS
+CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.codigo%type) 
+IS
+    CURSOR c_todoIncluido IS
+        SELECT COUNT(*)
+        FROM actividadesrealizadas
+        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
     v_todoIncluido NUMBER;
 BEGIN
-    SELECT COUNT(*) INTO v_todoIncluido
-    FROM actividadesrealizadas
-    WHERE codigoactividad=v_codactividad AND codigoestancia=(SELECT COUNT(codigo) FROM estancias WHERE codigoregimen = 'TI');
+    OPEN c_todoIncluido;
+    FETCH c_todoIncluido INTO v_todoIncluido;
     IF v_todoIncluido>0 THEN
-        RAISE_APPLICATION_ERROR(-20003,'La actividad especificada se ha realizado en regimen de Todo Incluido');
+        RAISE_APPLICATION_ERROR(-20003,'La actividad se ha realizado en regimen de Todo Incluido');
     END IF;
+    CLOSE c_todoIncluido;
 END;
 /
-
+    
 ---FALLO
 EXEC ActividadTodoIncluido ('A001');
 
@@ -82,6 +87,18 @@ END;
 
 ---Funciona correctamente
 EXEC ClienteRealizaActividad ('69191424H', 'B302');
+
+
+---Procedimiento de Excepciones
+CREATE OR REPLACE PROCEDURE ComprobarExcepciones (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
+IS
+BEGIN
+    ClienteInexistente(v_codcliente);
+    ActividadInexistente(v_codactividad);
+    ActividadTodoIncluido(v_codactividad);
+    ClienteRealizaActividad(v_codcliente, v_codactividad);
+END;
+/
 
 
 ---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
@@ -114,28 +131,31 @@ EXEC ActividadAbonada ('69191424H','B302'); ---false
 ---Fallo
 EXEC ActividadAbonada ('54890865P','A002');
 
+
 ---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
 CREATE OR REPLACE PROCEDURE ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
     v_pago NUMBER;
 BEGIN
-    ClienteInexistente(v_codcliente);
-    ActividadInexistente(v_codactividad);
-    ActividadTodoIncluido(v_codactividad);
-    ClienteRealizaActividad(v_codcliente, v_codactividad);
+    ComprobarExcepciones(v_codcliente, v_codactividad);
     ActividadAbonada(v_codcliente, v_codactividad);
 END;
 /
     
 
-EXEC ComprobarPago  ('06852683V','A032'); ---true
+EXEC ComprobarPago  ('06852683V','A032'); ---Régimen Todo Incluido
     
 EXEC ComprobarPago  ('69191424H','B302'); ---false
 
-EXEC ComprobarPago ('54890869P','A999'); ---false
+EXEC ComprobarPago ('54890869P','A999'); ---Cliente no existe
+
+EXEC ComprobarPago ('69191424H','A002'); ---Actividad no existe
+
+EXEC ComprobarPago ('40687067K','A001'); ---true
 
 
----PROCEDIMIENTO FINALIZADO
-
+---------------------------------------------------------------------------
+-----------------------PROCEDIMIENTO FINALIZADO----------------------------
+---------------------------------------------------------------------------
 
 ---MISMO PROCEDIMIENTO ES POSTGRESQL
 
@@ -185,5 +205,117 @@ SELECT ActividadInexistente ('A003');
 
 ---Funciona correctamente
 SELECT ActividadInexistente ('A032');
+
+---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
+
+CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%type)
+RETURNS VOID AS $ActividadTodoIncluido$
+DECLARE
+    v_todoIncluido INT;
+BEGIN
+    SELECT COUNT(*) INTO v_todoIncluido
+    FROM actividadesrealizadas
+    WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
+    IF v_todoIncluido > 0 THEN
+        RAISE EXCEPTION 'La actividad especificada se ha realizado en régimen de Todo Incluido';
+    END IF;
+END;
+$ActividadTodoIncluido$ LANGUAGE plpgsql;
+
+   
+---FALLO
+SELECT ActividadTodoIncluido ('A001');
+
+---Funciona correctamente
+SELECT ActividadTodoIncluido ('A032');
+
+
+---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
+CREATE OR REPLACE FUNCTION ClienteRealizaActividad (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
+RETURNS BOOLEAN AS $ClienteRealizaActividad$
+DECLARE
+    v_cliente INTEGER;
+BEGIN
+    SELECT codigo INTO v_cliente
+    FROM estancias 
+    WHERE nifcliente=v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
+    IF v_cliente IS NULL THEN
+        RAISE EXCEPTION 'El cliente nunca ha realizado esa actividad';
+    ELSE
+        RETURN TRUE;
+    END IF;
+END;
+$ClienteRealizaActividad$ LANGUAGE plpgsql;
+
+
+---Funciona correctamente
+SELECT ClienteRealizaActividad ('69191424H', 'B302');
+
+
+---Procedimiento de comprobación de excepciones.
+CREATE OR REPLACE FUNCTION ComprobarExcepciones (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
+RETURNS VOID AS $ComprobarExcepciones$
+BEGIN
+    PERFORM ClienteInexistente (v_codcliente);
+    PERFORM ActividadInexistente (v_codactividad);
+    PERFORM ActividadTodoIncluido (v_codactividad);
+    PERFORM ClienteRealizaActividad (v_codcliente, v_codactividad);
+END;
+$ComprobarExcepciones$ LANGUAGE plpgsql;
+
+
+---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente que retorne true si ha pagado y false si no ha pagado.
+CREATE OR REPLACE FUNCTION ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
+RETURNS BOOLEAN AS $ActividadAbonada$
+DECLARE
+    c_abonado CURSOR FOR
+        SELECT *
+        FROM actividadesrealizadas
+        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE nifcliente=v_codcliente) AND codigoactividad=v_codactividad
+        ORDER BY fecha DESC
+        FETCH FIRST 1 ROW ONLY;
+    v_abonado actividadesrealizadas%ROWTYPE;
+BEGIN
+    OPEN c_abonado;
+    FETCH c_abonado INTO v_abonado;
+    IF v_abonado.abonado = 'N' THEN
+        RETURN FALSE;
+    ELSE
+        RETURN TRUE;
+    END IF;
+END;
+$ActividadAbonada$ LANGUAGE plpgsql;
+
+
+---Funciona correctamente
+SELECT ActividadAbonada ('06852683V','A302'); ---true
+SELECT ActividadAbonada ('69191424H','B302'); ---false
+
+---Fallo
+EXEC ActividadAbonada ('54890865P','A002');
+
+---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
+
+CREATE OR REPLACE FUNCTION ComprobarPago (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
+RETURNS BOOLEAN AS $ComprobarPago$
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    PERFORM ComprobarExcepciones (v_codcliente, v_codactividad);
+    v_abonado := ActividadAbonada(v_codcliente, v_codactividad);
+    RETURN v_abonado;
+END;
+$ComprobarPago$ LANGUAGE plpgsql;
+
+
+SELECT ComprobarPago  ('06852683V','A032'); ---Régimen Todo Incluido
+    
+SELECT ComprobarPago  ('69191424H','B302'); ---false
+
+SELECT ComprobarPago ('54890869P','A999'); ---Cliente no existe
+
+SELECT ComprobarPago ('69191424H','A002'); ---Actividad no existe
+
+SELECT ComprobarPago ('40687067K','A001'); ---true
 
 

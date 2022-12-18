@@ -86,12 +86,12 @@ CREATE TABLE actividades (
 	codigo VARCHAR(9),
 	nombre VARCHAR(35),
 	descripcion	VARCHAR(140),
-	preciopORpersona DECIMAL(6,2),
+	precioporpersona DECIMAL(6,2),
 	comisionhotel DECIMAL(6,2),
 	costepersonaparahotel DECIMAL(6,2),
 	CONSTRAINT pk_actividades PRIMARY KEY (codigo),
 	CONSTRAINT codigo_valido CHECK(codigo ~ '[A-Z]{1}[0-9]{3}.*'),
-	CONSTRAINT comisionhotel_INferiOR CHECK(comisionhotel <= precioporpersona*0.25)
+	CONSTRAINT comisionhotel_inferiOR CHECK(comisionhotel <= precioporpersona*0.25)
 );
 
 CREATE TABLE actividadesrealizadas (
