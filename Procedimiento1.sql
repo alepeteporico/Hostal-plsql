@@ -18,7 +18,7 @@ BEGIN
     RETURN v_nombre;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20001, 'El cliente no existe');
+        RAISE_APPLICATION_ERROR(-20001, 'Cliente Inexistente');
         RETURN -1;
 END;
 /
@@ -43,29 +43,17 @@ END;
 
 ---Función que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
 CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
+RETURN actividades.nombre%TYPE
 IS
-    v_actividad nombre
-BEGIN
-    SELECT COUNT(*) INTO v_actividad
-    FROM actividades
-    WHERE codigo=v_codactividad;
-    IF v_actividad=0 THEN
-        RAISE_APPLICATION_ERROR(-20002,'La actividad especificada no existe');
-    END IF;
-END;
-/
-
-CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
-IS
-    v_actividad personas.nombre%TYPE;
+    v_nombre actividades.nombre%TYPE;
 BEGIN
     SELECT nombre INTO v_nombre
-    FROM personas
-    WHERE nif = v_codcliente;
+    FROM actividades
+    WHERE codigo = v_codactividad;
     RETURN v_nombre;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20001, 'El cliente no existe');
+        RAISE_APPLICATION_ERROR(-20002, 'Actividad Inexistente');
         RETURN -1;
 END;
 /
@@ -73,10 +61,21 @@ END;
 
 
 ---FALLO
-EXEC ActividadInexistente ('A003');
+DECLARE
+    v_nombre personas.nombre%TYPE;
+BEGIN
+    v_nombre := ActividadInexistente('A003');
+END;
+/
 
----Funciona correctamente
-EXEC ActividadInexistente ('A001');
+---FUNCIONA
+DECLARE
+    v_nombre personas.nombre%TYPE;
+BEGIN
+    v_nombre := ActividadInexistente('A032');
+END;
+/
+
 
 
 ---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
