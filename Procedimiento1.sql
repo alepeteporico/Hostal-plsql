@@ -77,46 +77,75 @@ END;
 /
 
 
-
+------------------------
 ---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
-CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%type) 
+CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%TYPE)
+RETURN actividadesrealizadas.codigoestancia%TYPE
 IS
-    CURSOR c_todoIncluido IS
-        SELECT COUNT(*)
-        FROM actividadesrealizadas
-        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
-    v_todoIncluido NUMBER;
+    v_regimen actividadesrealizadas.codigoestancia%TYPE;
 BEGIN
-    OPEN c_todoIncluido;
-    FETCH c_todoIncluido INTO v_todoIncluido;
-    IF v_todoIncluido>0 THEN
-        RAISE_APPLICATION_ERROR(-20003,'La actividad se ha realizado en regimen de Todo Incluido');
-    END IF;
-    CLOSE c_todoIncluido;
+    SELECT codigoestancia INTO v_regimen
+    FROM actividadesrealizadas
+    WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
+    RETURN v_regimen;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Actividad Todo Incluido');
+        RETURN 1;
 END;
 /
     
 ---FALLO
-EXEC ActividadTodoIncluido ('A001');
-
----Funciona correctamente
-EXEC ActividadTodoIncluido ('A032');
-
-
----Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
-CREATE OR REPLACE FUNCTION ClienteRealizaActividad (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
-    v_cliente NUMBER;
+DECLARE
+    v_regimen actividadesrealizadas.codigoestancia%TYPE;
 BEGIN
-    SELECT codigo INTO v_cliente
-    FROM estancias WHERE nifcliente=v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
-    IF v_cliente IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20004,'El cliente nunca ha realizado esa actividad');
-    END IF;
+    v_regimen := ActividadTodoIncluido('A003');
 END;
 /
 
----Funciona correctamente
-EXEC ClienteRealizaActividad ('69191424H', 'B302');
+---FUNCIONA
+DECLARE
+    v_regimen actividadesrealizadas.codigoestancia%TYPE;
+BEGIN
+    v_regimen := ActividadTodoIncluido('A032');
+END;
+/
+------------------
+
+
+---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
+CREATE OR REPLACE FUNCTION ClienteRealizaActividad (v_codcliente personas.nif%TYPE, v_codactividad actividades.codigo%TYPE)
+RETURN estancias.codigo%TYPE
+IS
+    v_realizada estancias.codigo%TYPE;
+BEGIN
+    SELECT codigo INTO v_realizada
+    FROM estancias
+    WHERE nifcliente = v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
+    RETURN v_realizada;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'El cliente nunca ha realizado esa actividad');
+        RETURN -1;
+END;
+/
+
+---FALLO
+DECLARE
+    v_realizada estancias.codigo%TYPE;
+BEGIN
+    v_realizada := ClienteRealizaActividad ('69191424H', 'A032');
+END;
+/
+
+
+---FUNCIONA
+DECLARE
+    v_realizada estancias.codigo%TYPE;
+BEGIN
+    v_realizada := ClienteRealizaActividad ('69191424H', 'B302');
+END;
+/
 
 
 ---Procedimiento de Excepciones
