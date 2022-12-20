@@ -77,8 +77,7 @@ END;
 /
 
 
-------------------------
----Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
+---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido. 
 CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%TYPE)
 RETURN actividadesrealizadas.codigoestancia%TYPE
 IS
@@ -88,18 +87,22 @@ BEGIN
     FROM actividadesrealizadas
     WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
     RETURN v_regimen;
+    IF v_regimen IS NOT NULL THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Actividad Todo Incluido');
+        RETURN -1;
+    END IF;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Actividad Todo Incluido');
-        RETURN 1;
+        RETURN NULL;
 END;
 /
+
     
 ---FALLO
 DECLARE
     v_regimen actividadesrealizadas.codigoestancia%TYPE;
 BEGIN
-    v_regimen := ActividadTodoIncluido('A003');
+    v_regimen := ActividadTodoIncluido('A032');
 END;
 /
 
@@ -107,10 +110,9 @@ END;
 DECLARE
     v_regimen actividadesrealizadas.codigoestancia%TYPE;
 BEGIN
-    v_regimen := ActividadTodoIncluido('A032');
+    v_regimen := ActividadTodoIncluido('B302');
 END;
 /
-------------------
 
 
 ---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
