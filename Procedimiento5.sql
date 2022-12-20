@@ -20,3 +20,16 @@ BEGIN
     CLOSE c_todoIncluido;
 END;
 /
+
+
+---Procedimiento que rellena todas las filas de la columna BalanceHotel en la tabla ActividadesRealizadas
+
+CREATE OR REPLACE PROCEDURE RellenarBalance(v_codactividad actividadesrealizadas.codigoactividad%rowtype, v_codestancia actividadesrealizadas.codigoestancia%rowtype, v_fecha actividadesrealizadas.fecha%rowtype)
+IS
+BEGIN
+    UPDATE ActividadesRealizadas
+    SET BalanceHotel = NVL(SELECT PrecioporPersona, ComisionHotel, CostePersonaparaHotel
+                            FROM Actividades
+                            WHERE Codigo=) * (SELECT NumPersonas
+                                                FROM ActividadesRealizadas
+                                                WHERE )
