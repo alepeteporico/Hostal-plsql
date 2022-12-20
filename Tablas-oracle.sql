@@ -253,6 +253,6 @@ INSERT INTO actividadesrealizadas VALUES ('05','A001',to_DATE('10-01-2016 16:15'
 INSERT INTO actividadesrealizadas VALUES ('07','B302',to_DATE('28-02-2016 17:45','DD-MM-YYYY hh24:mi'),3,'N');
 INSERT INTO actividadesrealizadas VALUES ('04','A032',to_DATE('07-08-2015 12:15','DD-MM-YYYY hh24:mi'),6,'S');
 
-
+---Modificacion de tabla necesaria para procedimiento 5
 ALTER TABLE ActividadesRealizadas
 ADD balancehotel NUMBER(6,2);
