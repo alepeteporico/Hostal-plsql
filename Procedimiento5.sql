@@ -21,6 +21,34 @@ BEGIN
 END;
 /
 
+---Procedimiento que calcula el valor del balance
+
+CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad, v_codestancia, v_fecha)
+IS
+    v_precioporpersona  NUMBER(6,2);
+    v_comisionhotel NUMBER(6,2);
+    v_costepersonaparahotel NUMBER(6,2);
+    v_numpersonas   NUMBER(6,2);
+    v_balance   NUMBER(6,2);
+BEGIN
+    SELECT PrecioporPersona, ComisionHotel, CostePersonaparaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
+    FROM Actividades
+    WHERE Codigo=v_codactividad;
+
+    SELECT NumPersonas INTO v_numpersonas
+    FROM ActividadesRealizadas
+    WHERE CodigoActividad = v_codactividad
+    AND CodigoEstancia = v_codestancia
+    AND Fecha = v_fecha);
+
+    IF ActividadTodoIncluido='True'
+    THEN
+        v_balance=SUM(v_precioporpersona, costepersonaparahotel) * v_numpersonas;
+    ELSE
+        v_balance=SUM(v_precioporpersona, v_costepersonaparahotel, v_comisionhotel) * v_numpersonas;
+    END IF;
+END;
+/
 
 ---Procedimiento que rellena todas las filas de la columna BalanceHotel en la tabla ActividadesRealizadas
 
