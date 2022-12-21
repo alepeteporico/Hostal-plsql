@@ -7,156 +7,102 @@
 - El cliente nunca ha realizado esa actividad.*/
 
 ---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
-CREATE OR REPLACE FUNCTION ClienteInexistente (v_codcliente personas.nif%TYPE)
-RETURN personas.nombre%TYPE
-IS
-    v_nombre personas.nombre%TYPE;
+CREATE OR REPLACE PROCEDURE ClienteInexistente (v_codcliente personas.NIF%type) IS
+    v_cliente NUMBER;
 BEGIN
-    SELECT nombre INTO v_nombre
+    SELECT COUNT(*) INTO v_cliente
     FROM personas
-    WHERE nif = v_codcliente;
-    RETURN v_nombre;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Cliente Inexistente');
-        RETURN -1;
-END;
-/
-    
-
----FALLO
-DECLARE
-    v_nombre personas.nombre%TYPE;
-BEGIN
-    v_nombre := ClienteInexistente('12345678A');
-END;
-/
-
----FUNCIONA
-DECLARE
-    v_nombre personas.nombre%TYPE;
-BEGIN
-    v_nombre := ClienteInexistente('54890865P');
-END;
-/
-
-
----Función que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
-CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
-RETURN actividades.nombre%TYPE
-IS
-    v_nombre actividades.nombre%TYPE;
-BEGIN
-    SELECT nombre INTO v_nombre
-    FROM actividades
-    WHERE codigo = v_codactividad;
-    RETURN v_nombre;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Actividad Inexistente');
-        RETURN -1;
-END;
-/
-
-
----FALLO
-DECLARE
-    v_nombre personas.nombre%TYPE;
-BEGIN
-    v_nombre := ActividadInexistente('A003');
-END;
-/
-
----FUNCIONA
-DECLARE
-    v_nombre personas.nombre%TYPE;
-BEGIN
-    v_nombre := ActividadInexistente('A032');
-END;
-/
-
-
----Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido. 
-CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%TYPE)
-RETURN actividadesrealizadas.codigoestancia%TYPE
-IS
-    v_regimen actividadesrealizadas.codigoestancia%TYPE;
-BEGIN
-    SELECT codigoestancia INTO v_regimen
-    FROM actividadesrealizadas
-    WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
-    RETURN v_regimen;
-    IF v_regimen IS NOT NULL THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Actividad Todo Incluido');
-        RETURN -1;
+    WHERE NIF=v_codcliente;
+    IF v_cliente=0 THEN
+        RAISE_APPLICATION_ERROR(-20001,'El cliente especificado no existe');
     END IF;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RETURN NULL;
 END;
 /
 
+---FALLO
+EXEC ClienteInexistente ('12345678A');
+
+---Funciona correctamente
+EXEC ClienteInexistente ('54890865P');
+
+
+---Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
+CREATE OR REPLACE PROCEDURE ActividadInexistente (v_codactividad actividades.codigo%type)
+IS
+    v_actividad NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_actividad
+    FROM actividades
+    WHERE codigo=v_codactividad;
+    IF v_actividad=0 THEN
+        RAISE_APPLICATION_ERROR(-20002,'La actividad especificada no existe');
+    END IF;
+END;
+/
+    
+
+---FALLO
+EXEC ActividadInexistente ('A003');
+
+---Funciona correctamente
+EXEC ActividadInexistente ('A001');
+
+
+---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
+CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.codigo%type) 
+IS
+    CURSOR c_todoIncluido IS
+        SELECT COUNT(*)
+        FROM actividadesrealizadas
+        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
+    v_todoIncluido NUMBER;
+BEGIN
+    OPEN c_todoIncluido;
+    FETCH c_todoIncluido INTO v_todoIncluido;
+    IF v_todoIncluido>0 THEN
+        RAISE_APPLICATION_ERROR(-20003,'La actividad se ha realizado en regimen de Todo Incluido');
+    END IF;
+    CLOSE c_todoIncluido;
+END;
+/
     
 ---FALLO
-DECLARE
-    v_regimen actividadesrealizadas.codigoestancia%TYPE;
-BEGIN
-    v_regimen := ActividadTodoIncluido('A032');
-END;
-/
+EXEC ActividadTodoIncluido ('A001');
 
----FUNCIONA
-DECLARE
-    v_regimen actividadesrealizadas.codigoestancia%TYPE;
-BEGIN
-    v_regimen := ActividadTodoIncluido('B302');
-END;
-/
+---Funciona correctamente
+EXEC ActividadTodoIncluido ('A032');
 
 
 ---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
-CREATE OR REPLACE FUNCTION ClienteRealizaActividad (v_codcliente personas.nif%TYPE, v_codactividad actividades.codigo%TYPE)
-RETURN estancias.codigo%TYPE
-IS
-    v_realizada estancias.codigo%TYPE;
+CREATE OR REPLACE PROCEDURE ClienteRealizaActividad (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
+    v_realizada NUMBER;
 BEGIN
     SELECT codigo INTO v_realizada
-    FROM estancias
-    WHERE nifcliente = v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
-    RETURN v_realizada;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20004, 'El cliente nunca ha realizado esa actividad');
-        RETURN -1;
+    FROM estancias WHERE nifcliente=v_codcliente AND codigo IN (SELECT codigoestancia FROM actividadesrealizadas WHERE codigoactividad=v_codactividad);
+    IF v_realizada IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20004,'El cliente nunca ha realizado esa actividad');
+    END IF;
 END;
 /
 
----FALLO
-DECLARE
-    v_realizada estancias.codigo%TYPE;
-BEGIN
-    v_realizada := ClienteRealizaActividad ('69191424H', 'A032');
-END;
-/
-
-
----FUNCIONA
-DECLARE
-    v_realizada estancias.codigo%TYPE;
-BEGIN
-    v_realizada := ClienteRealizaActividad ('69191424H', 'B302');
-END;
-/
-
-
+---Funciona correctamente
+EXEC ClienteRealizaActividad ('69191424H', 'B302');
 
 
 ---Procedimiento de Excepciones
-CREATE OR REPLACE 
+CREATE OR REPLACE PROCEDURE ComprobarExcepciones (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
+IS
+BEGIN
+    ClienteInexistente(v_codcliente);
+    ActividadInexistente(v_codactividad);
+    ActividadTodoIncluido(v_codactividad);
+    ClienteRealizaActividad(v_codcliente, v_codactividad);
+END;
+/
 
 
 ---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
-CREATE OR REPLACE FUNCTION ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
+CREATE OR REPLACE PROCEDURE ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
 IS
     CURSOR c_actividad_abonada IS
         SELECT *
@@ -187,25 +133,62 @@ EXEC ActividadAbonada ('54890865P','A002');
 
 
 ---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
-CREATE OR REPLACE FUNCTION ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
-    v_pago NUMBER;
+CREATE OR REPLACE FUNCTION ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
+RETURN BOOLEAN
+IS
+    v_abonado BOOLEAN;
 BEGIN
     ComprobarExcepciones(v_codcliente, v_codactividad);
     ActividadAbonada(v_codcliente, v_codactividad);
+    RETURN v_abonado;
 END;
 /
-    
 
-EXEC ComprobarPago  ('06852683V','A032'); ---Régimen Todo Incluido
-    
-EXEC ComprobarPago  ('69191424H','B302'); ---false
+---Régimen Todo Incluido
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    v_abonado := ComprobarPago('06852683V','A032');
+    RETURN;
+END;
+/
 
-EXEC ComprobarPago ('54890869P','A999'); ---Cliente no existe
+---FALSE
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    v_abonado := ComprobarPago('69191424H','B302');
+    RETURN;
+END;
+/
 
-EXEC ComprobarPago ('69191424H','A002'); ---Actividad no existe
+---Cliente no existe    
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    v_abonado := ComprobarPago('54890869P','A999');
+    RETURN;
+END;
+/
 
-EXEC ComprobarPago ('40687067K','A001'); ---true
+---Actividad no existe
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    v_abonado := ComprobarPago('69191424H','A002');
+    RETURN;
+END;
+/
 
+
+---TRUE
+DECLARE
+    v_abonado BOOLEAN;
+BEGIN
+    v_abonado := ComprobarPago('40687067K','A001');
+    RETURN;
+END;
+/
 
 ---------------------------------------------------------------------------
 -----------------------PROCEDIMIENTO FINALIZADO----------------------------
