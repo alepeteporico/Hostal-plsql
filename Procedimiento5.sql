@@ -23,30 +23,31 @@ END;
 
 ---Procedimiento que calcula el valor del balance
 
-CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad, v_codestancia, v_fecha)
+CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type)
 IS
-    v_precioporpersona  NUMBER(6,2);
-    v_comisionhotel NUMBER(6,2);
-    v_costepersonaparahotel NUMBER(6,2);
-    v_numpersonas   NUMBER(6,2);
+    v_precioporpersona  actividades.PrecioPorPersona%type;
+    v_comisionhotel actividades.ComisionHotel%type;
+    v_costepersonaparahotel actividades.CostePersonaParaHotel%type;
+    v_numpersonas   actividadesrealizadas.NumPersonas%type;
     v_balance   NUMBER(6,2);
 BEGIN
-    SELECT PrecioporPersona, ComisionHotel, CostePersonaparaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
+    SELECT PrecioporPersona, ComisionHotel, CostePersonaParaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
     FROM Actividades
     WHERE Codigo=v_codactividad;
 
     SELECT NumPersonas INTO v_numpersonas
     FROM ActividadesRealizadas
-    WHERE CodigoActividad = v_codactividad
-    AND CodigoEstancia = v_codestancia
-    AND Fecha = v_fecha);
+    WHERE CodigoActividad=v_codactividad
+    AND CodigoEstancia=v_codestancia
+    AND Fecha=v_fecha;
 
     IF ActividadTodoIncluido='True'
     THEN
-        v_balance=SUM(v_precioporpersona, costepersonaparahotel) * v_numpersonas;
+        v_balance=v_precioporpersona + costepersonaparahotel) * v_numpersonas;
     ELSE
-        v_balance=SUM(v_precioporpersona, v_costepersonaparahotel, v_comisionhotel) * v_numpersonas;
+        v_balance=((v_precioporpersona + v_costepersonaparahotel + v_comisionhotel) * v_numpersonas) * -1;
     END IF;
+    dbms_output.put_line(v_balance);
 END;
 /
 
