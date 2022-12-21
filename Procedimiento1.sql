@@ -55,17 +55,20 @@ IS
     CURSOR c_todoIncluido IS
         SELECT COUNT(*)
         FROM actividadesrealizadas
-        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
+        WHERE codigoestancia = (SELECT MAX(codigo) FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
     v_todoIncluido NUMBER;
 BEGIN
     OPEN c_todoIncluido;
     FETCH c_todoIncluido INTO v_todoIncluido;
     IF v_todoIncluido>0 THEN
-        RAISE_APPLICATION_ERROR(-20003,'La actividad se ha realizado en regimen de Todo Incluido');
+        DBMS_OUTPUT.PUT_LINE('TRUE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('FALSE');
     END IF;
     CLOSE c_todoIncluido;
 END;
 /
+
     
 ---FALLO
 EXEC ActividadTodoIncluido ('A001');
