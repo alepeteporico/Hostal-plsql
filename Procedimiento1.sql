@@ -1,10 +1,11 @@
-/* Procedimientos */
+/* Procedimiento 1 */
 
-/* 1. Realiza una función ComprobarPago que reciba como parámetros un código de cliente y un código de actividad y devuelva un TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Debes controlar las siguientes excepciones: 
+/* Realiza una función ComprobarPago que reciba como parámetros un código de cliente y un código de actividad y devuelva un TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Debes controlar las siguientes excepciones: 
 - Cliente inexistente. 
 - Actividad Inexistente. 
 - Actividad realizada en régimen de Todo Incluido.
 - El cliente nunca ha realizado esa actividad.*/
+
 
 ---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
 CREATE OR REPLACE PROCEDURE ClienteInexistente (v_codcliente personas.NIF%type) IS
@@ -190,6 +191,7 @@ BEGIN
 END;
 /
 
+
 ---------------------------------------------------------------------------
 -----------------------PROCEDIMIENTO FINALIZADO----------------------------
 ---------------------------------------------------------------------------
@@ -219,6 +221,7 @@ SELECT ClienteInexistente ('32061164S');
 ---Funciona correctamente
 SELECT ClienteInexistente ('06852683V');
 
+
 --Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
 CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
 RETURNS BOOLEAN AS $ActividadInexistente$
@@ -242,6 +245,7 @@ SELECT ActividadInexistente ('A003');
 
 ---Funciona correctamente
 SELECT ActividadInexistente ('A032');
+
 
 ---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
 
@@ -330,6 +334,7 @@ SELECT ActividadAbonada ('69191424H','B302'); ---false
 
 ---Fallo
 EXEC ActividadAbonada ('54890865P','A002');
+
 
 ---Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
 

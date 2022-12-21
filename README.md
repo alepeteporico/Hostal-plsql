@@ -128,8 +128,8 @@
 8. Realiza los módulos de programación necesarios para que un cliente no pueda realizar dos estancias que se solapen en fechas entre ellas, esto es, un cliente no puede comenzar una estancia hasta que no haya terminado la anterior.
 
 ## Autores :computer:
-* María Jesús Alloza Rodríguez
-* Oscar Lucas Leo
-* Adrián Palomino García
-* Alejandro Gutierrez Valencia
+* María Jesús Alloza Rodríguez - Secretaria
+* Oscar Lucas Leo - Facilitador
+* Adrián Palomino García - Portavoz
+* Alejandro Gutierrez Valencia - Coordinador
 * :school:I.E.S. Gonzalo Nazareno :round_pushpin:(Dos Hermanas, Sevilla).
