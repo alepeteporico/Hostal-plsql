@@ -59,7 +59,6 @@ END;
 /
 
 
-
 ---FALLO
 DECLARE
     v_nombre personas.nombre%TYPE;
@@ -150,16 +149,10 @@ END;
 /
 
 
+
+
 ---Procedimiento de Excepciones
-CREATE OR REPLACE FUNCTION ComprobarExcepciones (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
-IS
-BEGIN
-    ClienteInexistente(v_codcliente);
-    ActividadInexistente(v_codactividad);
-    ActividadTodoIncluido(v_codactividad);
-    ClienteRealizaActividad(v_codcliente, v_codactividad);
-END;
-/
+CREATE OR REPLACE 
 
 
 ---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
