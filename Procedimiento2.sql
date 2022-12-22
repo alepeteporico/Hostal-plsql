@@ -33,8 +33,8 @@ Si una Actividad ha sido abonada in situ tampoco aparecerá en la factura.
 
 Debes tener cuidado de facturar bien las estancias que abarcan varias temporadas.*/
 
---Clientes--
 
+---Procedimiento que imprime el nombre del cliente y su apellido ingresando el codigo de la estancia
 create or replace procedure Cliente (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
@@ -46,8 +46,8 @@ begin
 end;
 /
 
---Habitaciones--
 
+---Procedimiento que muestra el numero de habitacion, la fecha de inicio y la fecha de salida de la estancia ingresando el codigo de la estancia
 create or replace procedure Habitacion (p_codE estancias.codigo%type)
 is
     cursor c_cursor is 
@@ -59,8 +59,8 @@ begin
 end;
 /
 
---Final estancias--
 
+---Procedimiento que muestra el código de la estancia y el tipo de régimen de alojamiento ingresando el codigo de la estancia
 create or replace procedure Estancia (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
@@ -77,8 +77,8 @@ end;
 
 --------------------------------------------------------------------------------
 
---Importe Total Alojamiento--
 
+---Función que calcula el importe total de del alojamiento ingresando el codigo de la estancia
 create or replace function ImporteAlojamiento(p_codE estancias.codigo%type)
 return number
 is 
@@ -89,8 +89,8 @@ begin
 end;
 /
 
---Final Alojamiento--
 
+---Procedimiento que muestrea el importe total del alojamiento ingresando el código de la estancia
 create or replace procedure Alojamiento (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
@@ -107,8 +107,8 @@ end;
 
 --------------------------------------------------------------------------
 
---Importe Total Gastos Extra--
 
+---Función que realiza el cálculo del importe de los gastos extras
 create or replace function ImporteGastos (p_codE estancias.codigo%type)
 return number
 is 
@@ -119,8 +119,8 @@ begin
 end;
 /
 
---Gastos Extra--
 
+---Procedimiento que muestra la fecha, el concepto y la cuantía de los gastos extras que ha realizado el cliente ingresando el código de la estancia. Tambien muestra el importe total de los gastos extras.
 create or replace procedure GastosExtra (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
@@ -135,8 +135,8 @@ begin
 end;
 /
 
---Comprobar Regimen TI--
 
+---Procedimiento que verifica que, introduciendo el codigo de la estancia, esta se haya hecho en régimen de todo incluido.
 create or replace function TI (p_codE estancias.codigo%type)
 return varchar2
 is 
@@ -151,8 +151,7 @@ begin
 end;
 /
 
---Final Importe Gastos Extra--
-
+---Procedimiento que calcula el Importe total de la estancia, teniendo en cuenta si la misma se ha realizado en régimen de todo incluido o no.
 create or replace function FinalImporteGastos (p_codE estancias.codigo%type)
 return number
 is
@@ -169,8 +168,8 @@ begin
 end;
 /
 
---Final Gastos Extra--
 
+--- Procedimiento que muestra el precio final de los gastos extras en caso de que la estancia no se haya realizado en régimen de todo incluido. En caso de que la estancia se haya realizado en régimen de todo incluido, no muestra nada.
 create or replace procedure FinalGastosExtra (p_codE estancias.codigo%type)
 is
 begin
@@ -184,8 +183,8 @@ end;
 
 -------------------------------------------------------------------------------
 
---Importe Actividades--
 
+---Procedimiento que calcula el importe de las actividades teniendo en cuenta el importe por persona y el número por persona que hay realizado la actividad, introduciendo el código de la estancia.
 create or replace function ImporteActividades (p_codE estancias.codigo%type)
 return number
 is 
@@ -196,8 +195,8 @@ begin
 end;
 /
 
---Actividades Realizadas--
 
+---Procedimiento que muestra las actividades realizadas por el cliente, junto con la fecha, el nombre de la actividad, el número de personas que han realizado la actividad y el importe de la actividad. Tambien muestra el importe total de las actividades realizadas.
 create or replace procedure Actividades_Realizadas (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
@@ -213,8 +212,8 @@ end;
 /
 
 
---Comprobar Regimen TI--
 
+------Procedimiento que verifica que, introduciendo el codigo de la estancia, esta se haya hecho en régimen de todo incluido.
 create or replace function TI (p_codE estancias.codigo%type)
 return varchar2
 is 
@@ -229,8 +228,8 @@ begin
 end;
 /
 
---Final Importe Actividades--
 
+---Procedimiento que, verificando si la estancia se ha realizado o no en régimen de todo incluido, calcula el importe total de las actividades realizadas. Para ello se debe ingresar el codigo de la estancia.
 create or replace function FinalImporteActividades (p_codE estancias.codigo%type)
 return number
 is
@@ -247,8 +246,8 @@ begin
 end;
 /
 
---Final Actividades Realizadas--
 
+---Procedimiento que, verificando que el codigo de estancia ingresado haya o no realizado la misma en régimen de todo incluido, muestra el procedimiento de actividades realizadas. En caso de que la estancia se haya realizado en régimen de todo incluido, no muestra nada.
 create or replace procedure FinalActividades_Realizadas (p_codE estancias.codigo%type)
 is
 begin
@@ -262,7 +261,11 @@ end;
 
 ---------------------------------------------------------------------------------
 
---Importe Factura--
+
+---Procedimiento que calcule el importe total de la factura ingresando el codigo de la estancia.Para ello necesitaremos llamar a los procedimientos:
+---ImporteAlojamiento
+---FinalImporteGastos
+---FinalImporteActividades
 
 create or replace procedure ImporteFactura(p_codE estancias.codigo%type)
 is
@@ -281,7 +284,15 @@ end;
 
 ---------------------------------------------------------------------------------
 
---Procedimiento Final--
+
+---Procedimiento que imprime la factura del cliente, introduciendo el codigo de la estancia. Para ello necesitaremos llamar a los procedimientos:
+---Estancia
+---Alojamiento
+---FinalGastosExtra
+---FinalActividades_Realizadas
+---ImporteFactura
+
+---El procedimiento imprime por pantalla el nombre del complejo, la localidad y el codigo de la estancia. Luego imprime por pantalla los datos de la estancia, los datos del alojamiento, los gastos extra, las actividades realizadas y el importe total de la factura.
 
 create or replace procedure ImprimirFactura (p_codE estancias.codigo%type)
 is
