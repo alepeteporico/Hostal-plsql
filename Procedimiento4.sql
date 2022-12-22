@@ -2,34 +2,111 @@
 
 /* Añade un campo email a los clientes y rellénalo para algunos de ellos. Realiza un trigger que cuando se rellene el campo Fecha de la Factura envíe por correo electrónico un resumen de la factura al cliente, incluyendo los datos fundamentales de la estancia, el importe de cada apartado y el importe total. */
 
-sudo apt-get update
-sudo apt-get install postfix
 
-sudo systemctl start postfix
-mailq
-sudo apt-get install mailutils
+---Añadimos la columna email a la tabla personas---
+ALTER TABLE personas ADD email VARCHAR2(60);
 
-sqlplus / as sysdba
-@$ORACLE_HOME/rdbms/admin/utlmail.sql
-@$ORACLE_HOME/rdbms/admin/prvtmail.plb
+---Rellenamos algunos clientes con email---
 
-alter session set SMTP_OUT_SERVER='olucas.gonzalonazareno.org';
+UPDATE personas set email = 'alvaro.rodriguez@gmail.com' where nif='54890865P';
+UPDATE personas set email = 'aitor.leon@gmail.com' where nif='40687067K';
+UPDATE personas set email = 'virginia.leon@gmail.com' where nif='77399071T';
+UPDATE personas set email = 'antonio.fernandez@gmail.com' where nif='69191424H';
+UPDATE personas set email = 'antonio.melandez@gmail.com' where nif='36059752F';
+UPDATE personas set email = 'carlos.mejias@gmail.com' where nif='10402498N';
+UPDATE personas set email = 'ana.gutierrez@gmail.com' where nif='10950967T';
+UPDATE personas set email = 'adrian.garcia@gmail.com' where nif='88095695Z';
+UPDATE personas set email = 'juan.romero@gmail.com' where nif='95327640T';
+UPDATE personas set email = 'francisco.franco@gmail.com' where nif='06852683V';
 
-grant execute on UTL_SMTP to practica;
-grant execute on utl_mail to practica;
-grant execute on sys.UTL_TCP to practica;
-grant execute on sys.UTL_SMTP to practica;
 
-create or replace procedure prueba_correo
-is
-begin
-    dbms_network_acl_admin.create_acl(acl => 'www.xml', description => 'WWW ACL', principal   => 'practica', is_grant    => true, privilege   => 'connect');
-    dbms_network_acl_admin.add_privilege(acl       => 'www.xml', principal => 'practica', is_grant  => true, privilege => 'resolve');
-    dbms_network_acl_admin.add.assign_acl(acl  => 'www.xml', host => 'olucas.gonzalonazareno.org');
-end;
+---Procedimiento que muestre los datos de la estancia
+
+CREATE OR REPLACE PROCEDURE MostrarDatosEstancia(p_codE estancias.codigo%type)
+IS
+BEGIN
+    Estancia (p_codE);
+    Alojamiento (p_codE);
+    Actividades_Realizadas (p_codE);
+    GastosExtras (p_codE);
+    ImporteFactura (p_codE);
+END;
 /
 
-exec prueba_correo;
+
+---Trigger que envía un correo electrónico cuando se rellena la fecha de la factura---
+
+CREATE OR REPLACE TRIGGER CorreoFactura
+AFTER INSERT OR UPDATE ON facturas.fecha
+FOR EACH ROW
+DECLARE
+    CURSOR c_correo IS
+        SELECT email
+        FROM personas
+        WHERE nif = (SELECT nifcliente
+                        FROM estancias
+                        WHERE fecha = :new.fecha);
+BEGIN
+    UTL_MAIL.SEND (
+    sender => 'mariajesus.allozarodriguez@gmail.com',
+    recipients => personas.email,
+    subject => 'Factura Complejo Rural La Fuente',
+    message => MostrarDatosEstancia,
+    mime_type => 'text/plain', charset => 'utf-8',
+    );
+END;
+/
+     
+    
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 create or replace procedure Enviar(p_envia varchar2, p_recibe varchar2, p_asunto varchar2, p_cuerpo varchar2, p_host varchar2)
 is 
