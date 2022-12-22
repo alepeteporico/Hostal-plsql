@@ -333,6 +333,6 @@ exec ImprimirFactura('04');
 
 --Si una Actividad ha sido abonada in situ tampoco aparecerá en la factura.
 
-insert into actividadesrealizadas values ('07','A032', to_date(sysdate, 'DD-MM-YYYY hh24:mi', 6,'S'));
+insert into actividadesrealizadas values ('07','A032', to_date(sysdate, 'DD-MM-YYYY hh24:mi'), 6,'S');
 
 exec ImprimirFactura('07');
