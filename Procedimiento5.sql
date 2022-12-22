@@ -83,7 +83,8 @@ END;
 --- Una vez rellena la columna con las actividades que ya teniamos vamos a realizar un trigger que la mantenga actualizada con cada registro nuevo.
 
 ---Trigger que actualiza la columna BalanceHotel cada vez que se modifica la tabla ActividadesRealizadas
- CREATE OR REPLACE TRIGGER ActualizarBalance
+
+CREATE OR REPLACE TRIGGER ActualizarBalance
 AFTER INSERT ON ActividadesRealizadas
 DECLARE
     v_codestancia actividadesrealizadas.codigoestancia%type;
