@@ -83,3 +83,27 @@ END;
 --- Una vez rellena la columna con las actividades que ya teniamos vamos a realizar un trigger que la mantenga actualizada con cada registro nuevo.
 
 ---Trigger que actualiza la columna BalanceHotel cada vez que se modifica la tabla ActividadesRealizadas
+ CREATE OR REPLACE TRIGGER ActualizarBalance
+AFTER INSERT ON ActividadesRealizadas
+DECLARE
+    v_codestancia actividadesrealizadas.codigoestancia%type;
+    v_codactividad actividadesrealizadas.codigoactividad%type;
+    v_fecha actividadesrealizadas.fecha%type;
+    v_balance   actividadesrealizadas.balancehotel%type;
+BEGIN
+    SELECT CodigoActividad, CodigoEstancia, Fecha INTO v_codactividad, v_codestancia, v_fecha
+    FROM ActividadesRealizadas
+    WHERE Fecha=(SELECT MAX(Fecha)
+                FROM ActividadesRealizadas);
+    
+    CalcularPrecioBalance(v_codactividad, v_codestancia, v_fecha, v_balance);
+    
+    UPDATE ActividadesRealizadas SET BalanceHotel=v_balance
+    WHERE CodigoActividad=v_codactividad AND CodigoEstancia=v_codestancia AND Fecha=v_fecha;
+END;
+/
+
+--- Comprobación del trigger
+
+INSERT INTO actividadesrealizadas(CodigoEstancia, CodigoActividad, Fecha, NumPersonas, Abonado)
+VALUES ('04','B302',to_DATE('20-05-2017 17:30','DD-MM-YYYY hh24:mi'),2,'S');
