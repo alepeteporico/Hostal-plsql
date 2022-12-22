@@ -1,7 +1,9 @@
 CREATE TABLE temporadas (
-	codigo VARCHAR2(9),
-	nombre VARCHAR2(35),
-	CONSTRAINT pk_temporadas PRIMARY KEY (codigo)
+	codigo			varchar2(9),
+	Nombre			varchar2(35),
+	fecha_inicio		date,
+	fecha_fin		date,
+	constraint pk_temporadas primary key (codigo)
 );	
 
 CREATE TABLE regimenes (
@@ -116,9 +118,9 @@ CREATE TABLE actividadesrealizadas (
 
 
 ---Temporadas -- codigo, nombre
-INSERT INTO temporadas VALUES ('01','Baja');
-INSERT INTO temporadas VALUES ('02','Alta');
-INSERT INTO temporadas VALUES ('03','Especial');
+INSERT INTO temporadas VALUES ('01','Baja', to_date('01-11-2022','DD-MM-YYYY'), to_date('31-03-2023','DD-MM-YYYY'));
+INSERT INTO temporadas VALUES ('02','Alta', to_date('01-04-2022','DD-MM-YYYY'), to_date('31-10-2022','DD-MM-YYYY'));
+INSERT INTO temporadas VALUES ('03','Especial', to_date('25-12-2022','DD-MM-YYYY'), to_date('06-01-2023','DD-MM-YYYY'));
 
 
 ---Regimenes -- codigo, nombre	
