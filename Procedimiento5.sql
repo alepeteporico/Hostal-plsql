@@ -2,26 +2,7 @@
 
 /* Te recuerdo que cada vez que un cliente realiza una actividad, hay dos posibilidades: Si el cliente está en TI el hotel paga a la empresa el coste de la actividad. Si no está en TI, el hotel recibe un porcentaje de comisión del importe que paga el cliente por realizar la actividad.*/
 
---- Procedimiento que devuelve true si la actividad se ha realizado en regimen de todo incluido
-
-CREATE OR REPLACE PROCEDURE ActividadTodoIncluidoTrue (v_codactividad actividades.codigo%type) RETURN BOOLEAN
-IS
-    CURSOR c_todoIncluido IS
-        SELECT COUNT(*)
-        FROM actividadesrealizadas
-        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
-    v_todoIncluido NUMBER;
-BEGIN
-    OPEN c_todoIncluido;
-    FETCH c_todoIncluido INTO v_todoIncluido;
-    IF v_todoIncluido>0 THEN
-        RETURN 'T';
-    ELSE
-        RETURN 'F';
-    END IF;
-    CLOSE c_todoIncluido;
-END;
-/
+--- Para valorar si una actividad se ha realizado en régimen de `Todo Incuido` o no, se utilizará el procedimiento **ActividadTodoIncluido** que hemos construido para el procedimiento **ControlarPago**.
 
 ---Procedimiento que calcula el valor del balance
 
@@ -77,3 +58,6 @@ BEGIN
     CLOSE c_actividades;
 END;
 /
+
+
+---Trigger que actualiza la columna BalanceHotel cada vez que se modifica la tabla ActividadesRealizadas
