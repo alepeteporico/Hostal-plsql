@@ -7,7 +7,7 @@
 - El cliente nunca ha realizado esa actividad.*/
 
 
----Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
+---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas. Devolverá un error si no existe.
 CREATE OR REPLACE PROCEDURE ClienteInexistente (v_codcliente personas.NIF%type) IS
     v_cliente NUMBER;
 BEGIN
@@ -27,7 +27,7 @@ EXEC ClienteInexistente ('12345678A');
 EXEC ClienteInexistente ('54890865P');
 
 
----Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
+---Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades. Devolverá un error si no existe.
 CREATE OR REPLACE PROCEDURE ActividadInexistente (v_codactividad actividades.codigo%type)
 IS
     v_actividad NUMBER;
@@ -49,23 +49,26 @@ EXEC ActividadInexistente ('A003');
 EXEC ActividadInexistente ('A001');
 
 
----Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
+---Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido introduciendo el código de la actividad y tomando el código de la estancia más reciente del cliente.
 CREATE OR REPLACE PROCEDURE ActividadTodoIncluido (v_codactividad actividades.codigo%type) 
 IS
     CURSOR c_todoIncluido IS
         SELECT COUNT(*)
         FROM actividadesrealizadas
-        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
+        WHERE codigoestancia = (SELECT MAX(codigo) FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
     v_todoIncluido NUMBER;
 BEGIN
     OPEN c_todoIncluido;
     FETCH c_todoIncluido INTO v_todoIncluido;
     IF v_todoIncluido>0 THEN
-        RAISE_APPLICATION_ERROR(-20003,'La actividad se ha realizado en regimen de Todo Incluido');
+        DBMS_OUTPUT.PUT_LINE('TRUE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('FALSE');
     END IF;
     CLOSE c_todoIncluido;
 END;
 /
+
     
 ---FALLO
 EXEC ActividadTodoIncluido ('A001');
@@ -74,7 +77,7 @@ EXEC ActividadTodoIncluido ('A001');
 EXEC ActividadTodoIncluido ('A032');
 
 
----Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad.
+---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad. Devolverá un error si el cliente nunca ha realizado esa actividad.
 CREATE OR REPLACE PROCEDURE ClienteRealizaActividad (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type) IS
     v_realizada NUMBER;
 BEGIN
@@ -102,7 +105,7 @@ END;
 /
 
 
----Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente.
+---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente. Devolvera TRUE en caso de haber sido abonada y FALSE en caso contrario.
 CREATE OR REPLACE PROCEDURE ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
 IS
     CURSOR c_actividad_abonada IS
@@ -133,7 +136,7 @@ EXEC ActividadAbonada ('69191424H','B302'); ---false
 EXEC ActividadAbonada ('54890865P','A002');
 
 
----Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
+---Función ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Función final en la que llamamos a los procedimientos de excepciones y a la función ActividadAbonada para contemplar todos los casos.
 CREATE OR REPLACE FUNCTION ComprobarPago (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
 RETURN BOOLEAN
 IS
@@ -198,7 +201,7 @@ END;
 
 ---MISMO PROCEDIMIENTO ES POSTGRESQL
 
----Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas.
+---Procedimiento que, ingresando NIF del cliente comprueba si existe en la tabla personas. Devolverá un error si no existe.
 CREATE OR REPLACE FUNCTION ClienteInexistente (v_codcliente personas.nif%type) 
 RETURNS BOOLEAN AS $ClienteInexistente$
 DECLARE
@@ -222,7 +225,7 @@ SELECT ClienteInexistente ('32061164S');
 SELECT ClienteInexistente ('06852683V');
 
 
---Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades.
+---Procedimiento que, ingresando el código de la actividad comprueba si existe en la tabla actividades. Devolverá un error si no existe.
 CREATE OR REPLACE FUNCTION ActividadInexistente (v_codactividad actividades.codigo%type)
 RETURNS BOOLEAN AS $ActividadInexistente$
 DECLARE
@@ -247,8 +250,7 @@ SELECT ActividadInexistente ('A003');
 SELECT ActividadInexistente ('A032');
 
 
----Procedimiento que compruebe si una actividad se ha realizado en régimen de Todo Incluido.
-
+---Procedimiento que compruebe si el cliente ha realizado una actividad ingresando el código de la actividad. Devolverá un error si el cliente nunca ha realizado esa actividad.
 CREATE OR REPLACE FUNCTION ActividadTodoIncluido (v_codactividad actividades.codigo%type)
 RETURNS VOID AS $ActividadTodoIncluido$
 DECLARE
@@ -305,7 +307,7 @@ END;
 $ComprobarExcepciones$ LANGUAGE plpgsql;
 
 
----Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente que retorne true si ha pagado y false si no ha pagado.
+---Procedimiento que compruebe si el cliente ha pagado la última actividad con ese código que ha realizado introduciendo el código de la actividad y el NIF del cliente. Devolvera TRUE en caso de haber sido abonada y FALSE en caso contrario.
 CREATE OR REPLACE FUNCTION ActividadAbonada (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
 RETURNS BOOLEAN AS $ActividadAbonada$
 DECLARE
@@ -336,8 +338,7 @@ SELECT ActividadAbonada ('69191424H','B302'); ---false
 EXEC ActividadAbonada ('54890865P','A002');
 
 
----Procedimiento ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario.
-
+---Función ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Función final en la que llamamos a los procedimientos de excepciones y a la función ActividadAbonada para contemplar todos los casos.
 CREATE OR REPLACE FUNCTION ComprobarPago (v_codcliente personas.nif%type, v_codactividad actividades.codigo%type)
 RETURNS BOOLEAN AS $ComprobarPago$
 DECLARE
@@ -349,15 +350,19 @@ BEGIN
 END;
 $ComprobarPago$ LANGUAGE plpgsql;
 
+---Régimen Todo Incluido
+SELECT ComprobarPago  ('06852683V','A032'); 
 
-SELECT ComprobarPago  ('06852683V','A032'); ---Régimen Todo Incluido
-    
-SELECT ComprobarPago  ('69191424H','B302'); ---false
+---FALSE
+SELECT ComprobarPago  ('69191424H','B302'); 
 
-SELECT ComprobarPago ('54890869P','A999'); ---Cliente no existe
+---Cliente no existe
+SELECT ComprobarPago ('54890869P','A999'); 
 
-SELECT ComprobarPago ('69191424H','A002'); ---Actividad no existe
+---Actividad no existe
+SELECT ComprobarPago ('69191424H','A002'); 
 
-SELECT ComprobarPago ('40687067K','A001'); ---true
+---TRUE
+SELECT ComprobarPago ('40687067K','A001');
 
 

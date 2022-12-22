@@ -2,78 +2,109 @@
 
 /* Te recuerdo que cada vez que un cliente realiza una actividad, hay dos posibilidades: Si el cliente está en TI el hotel paga a la empresa el coste de la actividad. Si no está en TI, el hotel recibe un porcentaje de comisión del importe que paga el cliente por realizar la actividad.*/
 
---- Procedimiento que devuelve true si la actividad se ha realizado en regimen de todo incluido
+--- Para valorar si una actividad se ha realizado en régimen de `Todo Incuido` o no, se utilizará el procedimiento **ActividadTodoIncluido** que hemos construido para el procedimiento **ControlarPago**.
 
-CREATE OR REPLACE PROCEDURE ActividadTodoIncluidoTrue (v_codactividad actividades.codigo%type) RETURN BOOLEAN
-IS
-    CURSOR c_todoIncluido IS
-        SELECT COUNT(*)
-        FROM actividadesrealizadas
-        WHERE codigoestancia = (SELECT codigo FROM estancias WHERE codigoregimen='TI') AND codigoactividad=v_codactividad;
-    v_todoIncluido NUMBER;
+--- Procedimiento que te dice si una estancia esta en todo incluido
+
+CREATE OR REPLACE PROCEDURE EstanciaTodoIncluido (v_codestancia actividadesrealizadas.codigoestancia%type, v_codregimen OUT VARCHAR2)
+AS
 BEGIN
-    OPEN c_todoIncluido;
-    FETCH c_todoIncluido INTO v_todoIncluido;
-    IF v_todoIncluido>0 THEN
-        RETURN 'T';
-    ELSE
-        RETURN 'F';
-    END IF;
-    CLOSE c_todoIncluido;
+    SELECT CodigoRegimen INTO v_codregimen
+    FROM Estancias
+    WHERE Codigo=v_codestancia;
 END;
 /
 
----Procedimiento que calcula el valor del balance
+--- Procedimiento que saca el numero de personas específicas que ha realizado una actividad
 
-CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type)
+CREATE OR REPLACE PROCEDURE CalcularNumPersonas (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type, v_numpersonas OUT actividadesrealizadas.NumPersonas%type)
 IS
-    v_precioporpersona  actividades.PrecioPorPersona%type;
-    v_comisionhotel actividades.ComisionHotel%type;
-    v_costepersonaparahotel actividades.CostePersonaParaHotel%type;
-    v_numpersonas   actividadesrealizadas.NumPersonas%type;
-    v_balance   NUMBER(6,2);
 BEGIN
-    SELECT PrecioporPersona, ComisionHotel, CostePersonaParaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
-    FROM Actividades
-    WHERE Codigo=v_codactividad;
-
     SELECT NumPersonas INTO v_numpersonas
     FROM ActividadesRealizadas
     WHERE CodigoActividad=v_codactividad
     AND CodigoEstancia=v_codestancia
     AND Fecha=v_fecha;
+END;
+/
 
-    IF ActividadTodoIncluido='True'
+---Procedimiento que calcula el valor del balance
+
+CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type, v_balance OUT NUMBER)
+IS
+    v_precioporpersona  actividades.PrecioPorPersona%type;
+    v_comisionhotel actividades.ComisionHotel%type;
+    v_costepersonaparahotel actividades.CostePersonaParaHotel%type;
+    v_numpersonas   actividadesrealizadas.NumPersonas%type;
+    v_regimen   VARCHAR2(4);
+BEGIN
+    SELECT PrecioporPersona, ComisionHotel, CostePersonaParaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
+    FROM Actividades
+    WHERE Codigo=v_codactividad;
+
+    CalcularNumPersonas(v_codactividad, v_codestancia, v_fecha, v_numpersonas);
+    EstanciaTodoIncluido(v_codestancia, v_regimen);
+
+    IF v_regimen='TI'
     THEN
-        v_balance=v_precioporpersona + costepersonaparahotel) * v_numpersonas;
+        v_balance:=v_precioporpersona * v_numpersonas;
     ELSE
-        v_balance=((v_precioporpersona + v_costepersonaparahotel + v_comisionhotel) * v_numpersonas) * -1;
+        v_balance:=((v_precioporpersona + v_costepersonaparahotel + v_comisionhotel) * v_numpersonas) * -1;
     END IF;
-    dbms_output.put_line(v_balance);
 END;
 /
 
 ---Procedimiento que rellena todas las filas de la columna BalanceHotel en la tabla ActividadesRealizadas
 
-CREATE OR REPLACE PROCEDURE RellenarBalance(v_codactividad actividadesrealizadas.codigoactividad%rowtype, v_codestancia actividadesrealizadas.codigoestancia%rowtype, v_fecha actividadesrealizadas.fecha%rowtype)
+CREATE OR REPLACE PROCEDURE RellenarBalance
 IS
+    v_balance   actividadesrealizadas.balancehotel%type;
     CURSOR c_actividades IS
     SELECT CodigoActividad, CodigoEstancia, Fecha
     FROM ActividadesRealizadas;
+
+    v_codigos   c_actividades%rowtype;
 BEGIN
     OPEN c_actividades;
-    FETCH c_actividades INTO v_codactividad, v_codestancia, v_fecha;
 
+    FETCH c_actividades INTO v_codigos;
     WHILE c_actividades%FOUND LOOP
-    UPDATE ActividadesRealizadas
-    SET BalanceHotel = NVL(SELECT PrecioporPersona, ComisionHotel, CostePersonaparaHotel
-                            FROM Actividades
-                            WHERE Codigo=v_codactividad) * (SELECT NumPersonas
-                                                FROM ActividadesRealizadas
-                                                WHERE CodigoActividad = v_codactividad
-                                                AND CodigoEstancia = v_codestancia
-                                                AND Fecha = v_fecha);
+        CalcularPrecioBalance(v_codigos.CodigoActividad, v_codigos.CodigoEstancia, v_codigos.Fecha, v_balance);
+
+        UPDATE ActividadesRealizadas SET BalanceHotel=v_balance
+        WHERE CodigoActividad=v_codigos.CodigoActividad AND CodigoEstancia=v_codigos.CodigoEstancia AND Fecha=v_codigos.Fecha;
+
+        FETCH c_actividades INTO v_codigos;
     END LOOP;
     CLOSE c_actividades;
 END;
 /
+
+--- Una vez rellena la columna con las actividades que ya teniamos vamos a realizar un trigger que la mantenga actualizada con cada registro nuevo.
+
+---Trigger que actualiza la columna BalanceHotel cada vez que se modifica la tabla ActividadesRealizadas
+
+CREATE OR REPLACE TRIGGER ActualizarBalance
+AFTER INSERT ON ActividadesRealizadas
+DECLARE
+    v_codestancia actividadesrealizadas.codigoestancia%type;
+    v_codactividad actividadesrealizadas.codigoactividad%type;
+    v_fecha actividadesrealizadas.fecha%type;
+    v_balance   actividadesrealizadas.balancehotel%type;
+BEGIN
+    SELECT CodigoActividad, CodigoEstancia, Fecha INTO v_codactividad, v_codestancia, v_fecha
+    FROM ActividadesRealizadas
+    WHERE Fecha=(SELECT MAX(Fecha)
+                FROM ActividadesRealizadas);
+    
+    CalcularPrecioBalance(v_codactividad, v_codestancia, v_fecha, v_balance);
+    
+    UPDATE ActividadesRealizadas SET BalanceHotel=v_balance
+    WHERE CodigoActividad=v_codactividad AND CodigoEstancia=v_codestancia AND Fecha=v_fecha;
+END;
+/
+
+--- Comprobación del trigger
+
+INSERT INTO actividadesrealizadas(CodigoEstancia, CodigoActividad, Fecha, NumPersonas, Abonado)
+VALUES ('04','B302',to_DATE('20-05-2017 17:30','DD-MM-YYYY hh24:mi'),2,'S');
