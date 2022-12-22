@@ -62,6 +62,27 @@ BEGIN
 END;
 /
 
+---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. Debemos tener en cuenta el codigo de estancia de la factura para poder enviar el resumen de la factura.
+
+CREATE OR REPLACE TRIGGER CorreoFactura
+AFTER INSERT OR UPDATE ON facturas
+FOR EACH ROW
+DECLARE
+    p_codE estancias.codigo%type;
+    CURSOR c_cliente IS
+    SELECT email FROM personas WHERE 
+BEGIN
+    SELECT codE INTO p_codE FROM facturas WHERE fecha = :NEW.fecha;
+    UTL_MAIL.SEND (
+    sender => 'mariajesus.allozarodriguez@gmail.com',
+    recipients => personas.email,
+    subject => 'Factura Complejo Rural La Fuente',
+    message => FacturaResumen(p_codE),
+    mime_type => 'text/plain', charset => 'utf-8'
+    );
+END;
+/
+
 
 ---Trigger que envía un correo electrónico cuando se rellena la fecha de la factura---
 
