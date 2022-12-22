@@ -56,28 +56,30 @@ END;
 
 ---Procedimiento que rellena todas las filas de la columna BalanceHotel en la tabla ActividadesRealizadas
 
-CREATE OR REPLACE PROCEDURE RellenarBalance(v_codactividad actividadesrealizadas.codigoactividad%rowtype, v_codestancia actividadesrealizadas.codigoestancia%rowtype, v_fecha actividadesrealizadas.fecha%rowtype)
+CREATE OR REPLACE PROCEDURE RellenarBalance
 IS
+    v_balance   actividadesrealizadas.balancehotel%type;
     CURSOR c_actividades IS
     SELECT CodigoActividad, CodigoEstancia, Fecha
     FROM ActividadesRealizadas;
+
+    v_codigos   c_actividades%rowtype;
 BEGIN
     OPEN c_actividades;
-    FETCH c_actividades INTO v_codactividad, v_codestancia, v_fecha;
 
+    FETCH c_actividades INTO v_codigos;
     WHILE c_actividades%FOUND LOOP
-    UPDATE ActividadesRealizadas
-    SET BalanceHotel = NVL(SELECT PrecioporPersona, ComisionHotel, CostePersonaparaHotel
-                            FROM Actividades
-                            WHERE Codigo=v_codactividad) * (SELECT NumPersonas
-                                                FROM ActividadesRealizadas
-                                                WHERE CodigoActividad = v_codactividad
-                                                AND CodigoEstancia = v_codestancia
-                                                AND Fecha = v_fecha);
+        CalcularPrecioBalance(v_codigos.CodigoActividad, v_codigos.CodigoEstancia, v_codigos.Fecha, v_balance);
+
+        UPDATE ActividadesRealizadas SET BalanceHotel=v_balance
+        WHERE CodigoActividad=v_codigos.CodigoActividad AND CodigoEstancia=v_codigos.CodigoEstancia AND Fecha=v_codigos.Fecha;
+
+        FETCH c_actividades INTO v_codigos;
     END LOOP;
     CLOSE c_actividades;
 END;
 /
 
+--- Una vez rellena la columna con las actividades que ya teniamos vamos a realizar un trigger que la mantenga actualizada con cada registro nuevo.
 
 ---Trigger que actualiza la columna BalanceHotel cada vez que se modifica la tabla ActividadesRealizadas
