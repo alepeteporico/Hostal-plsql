@@ -2,6 +2,8 @@
 
 /* Realiza los módulos de programación necesarios para que los precios de un mismo tipo de habitación en una misma temporada crezca en función de los servicios ofrecidos de esta forma: Precio TI > Precio PC > Precio MP> Precio AD */
 
+---Procedimiento que saca el precio de los regimienes
+
 ---Procedimiento que saca el coste de un regimen en concreto
 
 CREATE OR REPLACE PROCEDURE PrecioDeRegimen (v_codregimen Tarfias.CodigoRegimen%type, v_añadido OUT NUMBER)
@@ -33,5 +35,5 @@ BEGIN
 END;
 /
 
----Procedimiento que calcula el precio de una habitación en Alojamiento y Desayuno 
+--que calcula el precio de una habitación en Alojamiento y Desayuno 
 
