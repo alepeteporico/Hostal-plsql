@@ -7,7 +7,6 @@
 ALTER TABLE personas ADD email VARCHAR2(60);
 
 ---Rellenamos algunos clientes con email---
-
 UPDATE personas set email = 'alvaro.rodriguez@gmail.com' where nif='54890865P';
 UPDATE personas set email = 'aitor.leon@gmail.com' where nif='40687067K';
 UPDATE personas set email = 'virginia.leon@gmail.com' where nif='77399071T';
@@ -20,8 +19,33 @@ UPDATE personas set email = 'juan.romero@gmail.com' where nif='95327640T';
 UPDATE personas set email = 'francisco.franco@gmail.com' where nif='06852683V';
 
 
----Procedimiento que muestre los datos de la estancia
 
+---Procedimiento que imprime la cabecera del resumen de la factura
+CREATE OR REPLACE PROCEDURE CabeceraResumenFactura
+IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('--------------Resumen Factura--------------');
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
+END;
+/
+
+
+----Procedimiento que muestre la firma de la empresa en el correo electrónico---
+CREATE OR REPLACE PROCEDURE FirmaCorreo
+IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - - - - - - - ');
+    DBMS_OUTPUT.PUT_LINE('Complejo Rural La Fuente');
+    DBMS_OUTPUT.PUT_LINE('Calle de la Fuente, 1');
+    DBMS_OUTPUT.PUT_LINE('C.P. 50001');
+    DBMS_OUTPUT.PUT_LINE('Zaragoza');
+    DBMS_OUTPUT.PUT_LINE('Teléfono: 976 123 456');
+END;
+/
+
+
+---Procedimiento que muestre los datos de la estancia
 CREATE OR REPLACE PROCEDURE MostrarDatosEstancia(p_codE estancias.codigo%type)
 IS
 BEGIN
@@ -37,21 +61,19 @@ END;
 ---Trigger que envía un correo electrónico cuando se rellena la fecha de la factura---
 
 CREATE OR REPLACE TRIGGER CorreoFactura
-AFTER INSERT OR UPDATE ON facturas.fecha
+AFTER INSERT OR UPDATE ON facturas
 FOR EACH ROW
 DECLARE
     CURSOR c_correo IS
-        SELECT email
-        FROM personas
-        WHERE nif = (SELECT nifcliente
-                        FROM estancias
-                        WHERE fecha = :new.fecha);
+        SELECT codigo
+        FROM estancias 
+        WHERE codigo = p_codE;
 BEGIN
     UTL_MAIL.SEND (
     sender => 'mariajesus.allozarodriguez@gmail.com',
     recipients => personas.email,
     subject => 'Factura Complejo Rural La Fuente',
-    message => MostrarDatosEstancia,
+    message => CabeceraResumenFactura,
     mime_type => 'text/plain', charset => 'utf-8',
     );
 END;
