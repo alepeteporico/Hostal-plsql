@@ -1,9 +1,9 @@
 CREATE TABLE temporadas (
-	codigo			varchar2(9),
-	Nombre			varchar2(35),
-	fecha_inicio		date,
-	fecha_fin		date,
-	constraint pk_temporadas primary key (codigo)
+	codigo			VARCHAR2(9),
+	Nombre			VARCHAR2(35),
+	fecha_inicio		DATE,
+	fecha_fin		DATE,
+	CONSTRAINT pk_temporadas PRIMARY KEY (codigo)
 );	
 
 CREATE TABLE regimenes (
