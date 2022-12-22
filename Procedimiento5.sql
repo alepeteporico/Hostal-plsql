@@ -4,33 +4,53 @@
 
 --- Para valorar si una actividad se ha realizado en régimen de `Todo Incuido` o no, se utilizará el procedimiento **ActividadTodoIncluido** que hemos construido para el procedimiento **ControlarPago**.
 
----Procedimiento que calcula el valor del balance
+--- Procedimiento que te dice si una estancia esta en todo incluido
 
-CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type)
-IS
-    v_precioporpersona  actividades.PrecioPorPersona%type;
-    v_comisionhotel actividades.ComisionHotel%type;
-    v_costepersonaparahotel actividades.CostePersonaParaHotel%type;
-    v_numpersonas   actividadesrealizadas.NumPersonas%type;
-    v_balance   NUMBER(6,2);
+CREATE OR REPLACE PROCEDURE EstanciaTodoIncluido (v_codestancia actividadesrealizadas.codigoestancia%type, v_codregimen OUT VARCHAR2)
+AS
 BEGIN
-    SELECT PrecioporPersona, ComisionHotel, CostePersonaParaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
-    FROM Actividades
-    WHERE Codigo=v_codactividad;
+    SELECT CodigoRegimen INTO v_codregimen
+    FROM Estancias
+    WHERE Codigo=v_codestancia;
+END;
+/
 
+--- Procedimiento que saca el numero de personas específicas que ha realizado una actividad
+
+CREATE OR REPLACE PROCEDURE CalcularNumPersonas (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type, v_numpersonas OUT actividadesrealizadas.NumPersonas%type)
+IS
+BEGIN
     SELECT NumPersonas INTO v_numpersonas
     FROM ActividadesRealizadas
     WHERE CodigoActividad=v_codactividad
     AND CodigoEstancia=v_codestancia
     AND Fecha=v_fecha;
+END;
+/
 
-    IF ActividadTodoIncluido='True'
+---Procedimiento que calcula el valor del balance
+
+CREATE OR REPLACE PROCEDURE CalcularPrecioBalance (v_codactividad actividadesrealizadas.codigoactividad%type, v_codestancia actividadesrealizadas.codigoestancia%type, v_fecha actividadesrealizadas.fecha%type, v_balance OUT NUMBER)
+IS
+    v_precioporpersona  actividades.PrecioPorPersona%type;
+    v_comisionhotel actividades.ComisionHotel%type;
+    v_costepersonaparahotel actividades.CostePersonaParaHotel%type;
+    v_numpersonas   actividadesrealizadas.NumPersonas%type;
+    v_regimen   VARCHAR2(4);
+BEGIN
+    SELECT PrecioporPersona, ComisionHotel, CostePersonaParaHotel INTO v_precioporpersona, v_comisionhotel, v_costepersonaparahotel
+    FROM Actividades
+    WHERE Codigo=v_codactividad;
+
+    CalcularNumPersonas(v_codactividad, v_codestancia, v_fecha, v_numpersonas);
+    EstanciaTodoIncluido(v_codestancia, v_regimen);
+
+    IF v_regimen='TI'
     THEN
-        v_balance=v_precioporpersona + costepersonaparahotel) * v_numpersonas;
+        v_balance:=v_precioporpersona * v_numpersonas;
     ELSE
-        v_balance=((v_precioporpersona + v_costepersonaparahotel + v_comisionhotel) * v_numpersonas) * -1;
+        v_balance:=((v_precioporpersona + v_costepersonaparahotel + v_comisionhotel) * v_numpersonas) * -1;
     END IF;
-    dbms_output.put_line(v_balance);
 END;
 /
 
