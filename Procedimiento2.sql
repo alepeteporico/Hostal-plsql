@@ -41,7 +41,7 @@ is
     select nombre, apellidos from personas where nif = (select nifcliente from estancias where codigo = p_codE);
 begin 
     for var in c_cursor loop 
-        dbms_output.put_line('Cliente: '||var.nombre||var.apellidos);
+        dbms_output.put_line('Cliente: '||var.nombre|| ' ' || var.apellidos);
     end loop;
 end;
 /
@@ -109,7 +109,7 @@ return number
 is 
     v_gastos number;
 begin
-    select sum(cuantia) into v_gastos from gastos_extras where codigoestancia = (select codigo from estancias where codigo = p_codE);
+    select sum(cuantia) into v_gastos from gastos_extra where codigoestancia = (select codigo from estancias where codigo = p_codE);
     return v_gastos;
 end;
 /
@@ -119,7 +119,7 @@ end;
 create or replace procedure GastosExtra (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
-    select fecha, concepto, cuantia from gastos_extras where codigoestancia = (select codigo from estancias where codigo = p_codE);
+    select fecha, concepto, cuantia from gastos_extra where codigoestancia = (select codigo from estancias where codigo = p_codE);
 begin
     for var in c_cursor loop 
         dbms_output.put_line(var.fecha||chr(9)||var.concepto||chr(9)||var.cuantia);
@@ -172,6 +172,8 @@ begin
 end;
 /
 
+
+---Procedimiento que imprime el importe total de los gastos extra.
 create or replace procedure FinalGastosExtra(p_codE estancias.codigo%type)
 is 
 begin
