@@ -46,8 +46,10 @@ END;
 
 
 ---Procedimiento que muestre los datos de la estancia
-CREATE OR REPLACE PROCEDURE FacturaResumen(p_codE estancias.codigo%type)
+CREATE OR REPLACE FUNCTION FacturaResumen(p_codE estancias.codigo%type)
+RETURN VARCHAR2
 IS
+    p_resumen VARCHAR2(2000);
 BEGIN
     CabeceraResumenFactura;
     Habitacion (p_codE);
@@ -64,18 +66,18 @@ END;
 
 
 ---Procedimiento que muestra el email del cliente ingresando su código de estancia
-CREATE OR REPLACE FUNCTION EmailCliente (p_codE estancias.codigo%type)
-RETURN VARCHAR2
+CREATE OR REPLACE PROCEDURE EmailCliente (p_codE estancias.codigo%type)
 IS
     p_email personas.email%type;
 BEGIN
     SELECT email INTO p_email
     FROM personas 
-    WHERE
-    
+    WHERE nif = (SELECT nifcliente FROM estancias WHERE codigo = p_codE);
+    RETURN;
+END;
+/
 
-
-
+EXEC EmailCliente('01');
 
 
 ---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. Debemos tener en cuenta el codigo de estancia de la factura para poder enviar el resumen de la factura.
@@ -84,20 +86,34 @@ CREATE OR REPLACE TRIGGER CorreoFactura
 AFTER INSERT OR UPDATE ON facturas
 FOR EACH ROW
 DECLARE
-    p_codE estancias.codigo%type;
     CURSOR c_cliente IS
-    SELECT email FROM personas WHERE 
+        SELECT nombre, apellidos, email
+        FROM personas
+        WHERE nif = (SELECT nifcliente FROM estancias WHERE codigo = (SELECT codigoestancia FROM facturas WHERE fecha = :NEW.fecha));
+    v_cliente c_cliente%ROWTYPE;
+    p_codE estancias.codigo%type;
 BEGIN
-    SELECT codE INTO p_codE FROM facturas WHERE fecha = :NEW.fecha;
-    UTL_MAIL.SEND (
-    sender => 'mariajesus.allozarodriguez@gmail.com',
-    recipients => personas.email,
-    subject => 'Factura Complejo Rural La Fuente',
-    message => FacturaResumen(p_codE),
-    mime_type => 'text/plain', charset => 'utf-8'
-    );
+    IF :NEW.fecha ON INSERT THEN
+        FOR v_cliente IN c_cliente LOOP
+            UTL_MAIL.SEND (
+                sender => 'mariajesus.allozarodriguez@gmail.com',
+                recipients => 'mariajesus.allozarodriguez@gmail.com',
+                subject => 'Factura Complejo Rural La Fuente',
+                message => 'Estimado/a '||v_cliente.nombre||' '||v_cliente.apellidos||', le enviamos el resumen de su factura: '||FacturaResumen(p_codE),
+                mime_type => 'text/plain; charset=us-ascii'
+                );
+        END LOOP;
+    END IF;
 END;
 /
 
+
+--- Nos salta un error de tabla mutante. Esto es debido a que modificamos una tabla que está siendo utilizada por el cursor. Para solucionarlo, debemos crear un cursor que no modifique la tabla. Para ello, creamos un cursor que nos devuelva el email del cliente.---
+
+
+
+---Insertamos una factura para que se envíe el correo electrónico---
+
+INSERT INTO facturas (numero, codigoestancia,fecha) VALUES ('08','08', to_DATE('13-03-2019 12:00','DD-MM-YYYY hh24:mi'));
 
 
