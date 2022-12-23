@@ -62,6 +62,22 @@ BEGIN
 END;
 /
 
+
+---Procedimiento que muestra el email del cliente ingresando su código de estancia
+CREATE OR REPLACE FUNCTION EmailCliente (p_codE estancias.codigo%type)
+RETURN VARCHAR2
+IS
+    p_email personas.email%type;
+BEGIN
+    SELECT email INTO p_email
+    FROM personas 
+    WHERE
+    
+
+
+
+
+
 ---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. Debemos tener en cuenta el codigo de estancia de la factura para poder enviar el resumen de la factura.
 
 CREATE OR REPLACE TRIGGER CorreoFactura
@@ -82,3 +98,6 @@ BEGIN
     );
 END;
 /
+
+
+

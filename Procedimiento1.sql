@@ -92,6 +92,9 @@ END;
 ---Funciona correctamente
 EXEC ClienteRealizaActividad ('69191424H', 'B302');
 
+---FALLO
+EXEC ClienteRealizaActividad ('54890865P', 'A001');
+
 
 ---Procedimiento de Excepciones
 CREATE OR REPLACE PROCEDURE ComprobarExcepciones (v_codcliente personas.NIF%type, v_codactividad actividades.codigo%type)
@@ -132,8 +135,6 @@ END;
 EXEC ActividadAbonada ('06852683V','A302'); ---true
 EXEC ActividadAbonada ('69191424H','B302'); ---false
 
----Fallo
-EXEC ActividadAbonada ('54890865P','A002');
 
 
 ---Función ComprobarPago que muestrer TRUE si el cliente ha pagado la última actividad con ese código que ha realizado y un FALSE en caso contrario. Función final en la que llamamos a los procedimientos de excepciones y a la función ActividadAbonada para contemplar todos los casos.

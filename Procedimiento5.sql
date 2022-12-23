@@ -106,5 +106,4 @@ END;
 
 --- Comprobación del trigger
 
-INSERT INTO actividadesrealizadas(CodigoEstancia, CodigoActividad, Fecha, NumPersonas, Abonado)
-VALUES ('04','B302',to_DATE('20-05-2017 17:30','DD-MM-YYYY hh24:mi'),2,'S');
+INSERT INTO actividadesrealizadas(CodigoEstancia, CodigoActividad, Fecha, NumPersonas, Abonado) VALUES ('04','B302',to_DATE('20-05-2017 17:30','DD-MM-YYYY hh24:mi'),2,'S');

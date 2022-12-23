@@ -2,7 +2,7 @@
 
 /* 3. Realiza un trigger que impida que haga que cuando se inserte la realización de una actividad asociada a una estancia en regimen TI el campo Abonado no pueda valer FALSE. */
 
-create or replace trigger ejer3 
+create or replace trigger ActividadTITrue 
 after insert on actividadesrealizadas
 for each row
 declare
@@ -17,9 +17,14 @@ begin
 end;
 /
 
---PostgreSQL--
 
-create or replace function ejer3() returns trigger as 
+---------------------------------------------------------------------------
+--------------------------TRIGGER FINALIZADO-------------------------------
+---------------------------------------------------------------------------
+
+---MISMO TRIGGER ES POSTGRESQL
+
+create or replace function ActividadTITrue () returns trigger as 
 $body$
 declare
     v_variable varchar(2);
@@ -36,9 +41,9 @@ end;
 $body$
 language plpgsql;
 
-create trigger trigger_ejer3 
+create trigger ActividadTITrue  
 after insert on actividadesrealizadas
-for each row execute procedure ejer3();
+for each row execute procedure ActividadTITrue ();
 
 --Comprobacion del error--
 insert into actividadesrealizadas values ('04','A032',to_date('09-08-2022 11:30','DD-MM-YYYY hh24:mi'),6,'N');
