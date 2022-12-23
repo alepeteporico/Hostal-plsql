@@ -82,22 +82,3 @@ BEGIN
     );
 END;
 /
-
-
----Trigger que envía un correo electrónico cuando se rellena la fecha de la factura---
-
-CREATE OR REPLACE TRIGGER CorreoFactura
-AFTER INSERT OR UPDATE ON facturas
-FOR EACH ROW
-DECLARE
-    
-BEGIN
-    UTL_MAIL.SEND (
-    sender => 'mariajesus.allozarodriguez@gmail.com',
-    recipients => personas.email,
-    subject => 'Factura Complejo Rural La Fuente',
-    message => CabeceraResumenFactura,
-    mime_type => 'text/plain', charset => 'utf-8'
-    );
-END;
-/
