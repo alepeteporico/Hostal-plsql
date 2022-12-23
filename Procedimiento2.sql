@@ -90,7 +90,7 @@ end;
 create or replace procedure Alojamiento (p_codE estancias.codigo%type)
 is 
     cursor c_cursor is 
-    select nombre, fecha_fin - fecha_inicio as dias, preciopordia  from temporadas, tarifas where codigoregimen = (select codigoregimen from estancias where codigo = p_codE);
+    select nombre, fecha_fin - fecha_inicio as dias, preciopordia  from temporadas a, tarifas b where a.codigo = codigotemporada and codigoregimen = (select codigoregimen from estancias where codigo = p_codE) order by nombre;
 begin
     dbms_output.put_line('Alojamiento');
     dbms_output.put_line('----------------------------');
