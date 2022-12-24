@@ -24,26 +24,26 @@ end;
 
 ---MISMO TRIGGER ES POSTGRESQL
 
-create or replace function ActividadTITrue () returns trigger as 
+create or replace function ejer3() returns trigger as 
 $body$
 declare
-    v_variable varchar(2);
+    v_variable regimenes.codigo%type;
 begin 
     select codigo into v_variable
     from regimenes where codigo in (select codigoregimen from estancias where codigo = new.codigoestancia);
 
     if new.abonado = 'N' and v_variable = 'TI' then 
         raise notice '%', 'La actividad asociada a una estancia en regimen TI el campo abonado no puede ser FALSE';
-        return new;
+        return v_variable;
     end if;
-    return null;
+    return new;
 end;
 $body$
 language plpgsql;
 
-create trigger ActividadTITrue  
+create trigger trigger_ejer3 
 after insert on actividadesrealizadas
-for each row execute procedure ActividadTITrue ();
+for each row execute procedure ejer3();
 
 --Comprobacion del error--
 insert into actividadesrealizadas values ('04','A032',to_date('09-08-2022 11:30','DD-MM-YYYY hh24:mi'),6,'N');
