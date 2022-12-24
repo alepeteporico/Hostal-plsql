@@ -31,7 +31,7 @@ END;
 /
 
 
-----Procedimiento que muestre la firma de la empresa en el correo electrónico---
+---Procedimiento que muestre la firma de la empresa en el correo electrónico---
 CREATE OR REPLACE PROCEDURE FirmaCorreo
 IS
 BEGIN
@@ -52,63 +52,86 @@ IS
     p_resumen VARCHAR2(2000);
 BEGIN
     CabeceraResumenFactura;
-    Habitacion (p_codE);
     Estancia (p_codE);
-    DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - ');
-    dbms_output.put_line('Importe Total Alojamiento: '||ImporteAlojamiento(p_codE));
-    GastosExtra (p_codE);
-    FinalActividadesR(p_codE);
-    DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - ');
-    ImporteFactura (p_codE);
-    FirmaCorreo;
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('Importe Total Gastos: ' || ImporteGastos(p_codE));
+    DBMS_OUTPUT.PUT_LINE('Importe Total Actividades: ' || ImporteActividades(p_codE));
+    DBMS_OUTPUT.PUT_LINE('Importe Total Alojamiento: ' || ImporteAlojamiento(p_codE));
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
+    ImporteFactura(p_codE);
 END;
 /
 
+SELECT FacturaResumen('04') FROM DUAL;
 
 ---Procedimiento que muestra el email del cliente ingresando su código de estancia
-CREATE OR REPLACE PROCEDURE EmailCliente (p_codE estancias.codigo%type)
+CREATE OR REPLACE FUNCTION EmailCliente (p_codE estancias.codigo%type)
+return personas.email%type
 IS
     p_email personas.email%type;
 BEGIN
     SELECT email INTO p_email
     FROM personas 
     WHERE nif = (SELECT nifcliente FROM estancias WHERE codigo = p_codE);
-    RETURN;
+    RETURN p_email;
 END;
 /
 
-EXEC EmailCliente('01');
+SELECT EmailCliente('02') FROM DUAL;
 
+---Función que obtenga la última fecha insertada en la tabla facturas---
+CREATE OR REPLACE FUNCTION FechaFinEstancia (p_codE estancias.codigo%type)
+RETURN DATE
+IS
+    p_fecha_fin estancias.fecha_fin%type;
+BEGIN
+    SELECT fecha_fin INTO p_fecha_fin
+    FROM estancias
+    WHERE codigo = p_codE;
+    RETURN p_fecha_fin;
+END;
+/
 
----Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. Debemos tener en cuenta el codigo de estancia de la factura para poder enviar el resumen de la factura.
+SELECT FechaFinEstancia('02') FROM DUAL;
 
-CREATE OR REPLACE TRIGGER CorreoFactura
-AFTER INSERT OR UPDATE ON facturas
+---Función que devuelva el nombre y los apellidos de los cliente en una sola variable---
+CREATE OR REPLACE FUNCTION NombreCliente (p_codE estancias.codigo%type)
+RETURN VARCHAR2
+IS
+    p_nombre VARCHAR2(70);
+BEGIN
+    SELECT nombre || ' ' || apellidos INTO p_nombre
+    FROM personas
+    WHERE nif = (SELECT nifcliente FROM estancias WHERE codigo = p_codE);
+    RETURN p_nombre;
+END;
+/
+
+SELECT NombreCliente('02') FROM DUAL;
+
+---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. El correo electrónico contendrá el resumen de la factura---
+
+CREATE OR REPLACE TRIGGER envio_factura
+AFTER INSERT ON facturas
 FOR EACH ROW
 DECLARE
-    CURSOR c_cliente IS
-        SELECT nombre, apellidos, email
-        FROM personas
-        WHERE nif = (SELECT nifcliente FROM estancias WHERE codigo = (SELECT codigoestancia FROM facturas WHERE fecha = :NEW.fecha));
-    v_cliente c_cliente%ROWTYPE;
-    p_codE estancias.codigo%type;
+    p_nombre VARCHAR2(70);
+    p_email personas.email%type;
+    p_fecha_fin estancias.fecha_fin%type;
+    p_resumen VARCHAR2(2000);
 BEGIN
-    IF :NEW.fecha ON INSERT THEN
-        FOR v_cliente IN c_cliente LOOP
-            UTL_MAIL.SEND (
-                sender => 'mariajesus.allozarodriguez@gmail.com',
-                recipients => 'mariajesus.allozarodriguez@gmail.com',
-                subject => 'Factura Complejo Rural La Fuente',
-                message => 'Estimado/a '||v_cliente.nombre||' '||v_cliente.apellidos||', le enviamos el resumen de su factura: '||FacturaResumen(p_codE),
-                mime_type => 'text/plain; charset=us-ascii'
-                );
-        END LOOP;
-    END IF;
+    p_nombre := NombreCliente(:new.codigoestancia);
+    p_email := EmailCliente(:new.codigoestancia);
+    p_fecha_fin := FechaFinEstancia(:new.codigoestancia);
+    UTL_MAIL.SEND (
+        sender => 'mariajesus.allozarodriguez@gmail.com',
+        recipients => 'mariajesus.allozarodriguez@gmail.com',
+        subject => 'Factura Complejo Rural La Fuente',
+        message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || p_resumen,
+        mime_type => 'text/plain; charset=us-ascii'
+    );
 END;
 /
-
-
---- Nos salta un error de tabla mutante. Esto es debido a que modificamos una tabla que está siendo utilizada por el cursor. Para solucionarlo, debemos crear un cursor que no modifique la tabla. Para ello, creamos un cursor que nos devuelva el email del cliente.---
 
 
 
@@ -117,3 +140,17 @@ END;
 INSERT INTO facturas (numero, codigoestancia,fecha) VALUES ('08','08', to_DATE('13-03-2019 12:00','DD-MM-YYYY hh24:mi'));
 
 
+---Debemos controlar que la tabla factura sea mutante para que se ejecute el trigger. Por ello, debemos crear una tabla mutante---
+
+CREATE TABLE facturas2(
+    numero VARCHAR(9),
+	codigoestancia VARCHAR(9),
+	fecha DATE
+);
+
+---Insertamos una factura en la tabla mutante para que se ejecute el trigger---
+
+INSERT INTO facturas_mutante (numero, codigoestancia,fecha) VALUES ('09','09', to_DATE('13-03-2019 12:00','DD-MM-YYYY hh24:mi'));
+
+
+INSERT INTO facturas (SELECT * FROM facturas_mutante);
