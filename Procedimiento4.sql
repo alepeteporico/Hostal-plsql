@@ -92,7 +92,7 @@ BEGIN
 END;
 /
 
-SELECT FechaFinEstancia('02') FROM DUAL;
+SELECT FechaFinEstancia('08') FROM DUAL;
 
 ---Función que devuelva el nombre y los apellidos de los cliente en una sola variable---
 CREATE OR REPLACE FUNCTION NombreCliente (p_codE estancias.codigo%type)
@@ -107,7 +107,7 @@ BEGIN
 END;
 /
 
-SELECT NombreCliente('02') FROM DUAL;
+SELECT NombreCliente('08') FROM DUAL;
 
 ---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. El correo electrónico contendrá el resumen de la factura---
 
@@ -125,7 +125,7 @@ BEGIN
     p_fecha_fin := FechaFinEstancia(:new.codigoestancia);
     UTL_MAIL.SEND (
         sender => 'mariajesus.allozarodriguez@gmail.com',
-        recipients => 'mariajesus.allozarodriguez@gmail.com',
+        recipients => p_email,
         subject => 'Factura Complejo Rural La Fuente',
         message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || p_resumen,
         mime_type => 'text/plain; charset=us-ascii'
@@ -135,22 +135,13 @@ END;
 
 
 
+
 ---Insertamos una factura para que se envíe el correo electrónico---
 
-INSERT INTO facturas (numero, codigoestancia,fecha) VALUES ('08','08', to_DATE('13-03-2019 12:00','DD-MM-YYYY hh24:mi'));
+INSERT INTO personas VALUES ('32061164S','Maria','Alloza Rodriguez','C/ Leon X','Madrid (Madrid)','riiku23@gmail.com');
+
+INSERT INTO estancias VALUES ('08',to_DATE('14-02-2020 12:00','DD-MM-YYYY hh24:mi'),to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'),'00','32061164S','32061164S','AD');
 
 
----Debemos controlar que la tabla factura sea mutante para que se ejecute el trigger. Por ello, debemos crear una tabla mutante---
 
-CREATE TABLE facturas2(
-    numero VARCHAR(9),
-	codigoestancia VARCHAR(9),
-	fecha DATE
-);
-
----Insertamos una factura en la tabla mutante para que se ejecute el trigger---
-
-INSERT INTO facturas_mutante (numero, codigoestancia,fecha) VALUES ('09','09', to_DATE('13-03-2019 12:00','DD-MM-YYYY hh24:mi'));
-
-
-INSERT INTO facturas (SELECT * FROM facturas_mutante);
+INSERT INTO facturas VALUES ('08','08', to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'));
