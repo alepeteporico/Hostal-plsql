@@ -62,7 +62,7 @@ BEGIN
 END;
 /
 
-SELECT FacturaResumen('04') FROM DUAL;
+SELECT FacturaResumen('08') FROM DUAL;
 
 ---Procedimiento que muestra el email del cliente ingresando su código de estancia
 CREATE OR REPLACE FUNCTION EmailCliente (p_codE estancias.codigo%type)
@@ -140,8 +140,41 @@ END;
 
 INSERT INTO personas VALUES ('32061164S','Maria','Alloza Rodriguez','C/ Leon X','Madrid (Madrid)','riiku23@gmail.com');
 
-INSERT INTO estancias VALUES ('08',to_DATE('14-02-2020 12:00','DD-MM-YYYY hh24:mi'),to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'),'00','32061164S','32061164S','AD');
+INSERT INTO estancias VALUES ('08',to_DATE('14-02-2020 12:00','DD-MM-YYYY hh24:mi'),to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'),'05','32061164S','32061164S','AD');
 
 
 
 INSERT INTO facturas VALUES ('08','08', to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'));
+
+
+
+
+
+
+
+CREATE OR REPLACE TRIGGER CorreoFactura
+AFTER INSERT ON facturas
+FOR EACH ROW
+DECLARE
+    ---Declaración de variables---
+    p_nombre VARCHAR2(70);
+    p_email personas.email%type;
+    p_codE estancias.codigo%type;
+    p_fecha_fin estancias.fecha_fin%type;
+    p_resumen VARCHAR2(2000);
+BEGIN
+    ---Asignación de variables---
+    p_fecha_fin := FechaFinEstancia(:new.codigoestancia);
+    p_email := EmailCliente(:new.codigoestancia);
+    p_resumen := FacturaResumen(:new.codigoestancia);
+    p_nombre := NombreCliente(:new.codigoestancia);
+    ---Envío del correo electrónico---
+    UTL_MAIL.SEND (
+        sender => 'mariajesus.allozarodriguez@gmail.com',
+        recipients => p_email,
+        subject => 'Factura Complejo Rural La Fuente',
+        message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || p_resumen,
+        mime_type => 'text/plain; charset=us-ascii'
+    );
+END;
+/
