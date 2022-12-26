@@ -19,50 +19,43 @@ UPDATE personas set email = 'juan.romero@gmail.com' where nif='95327640T';
 UPDATE personas set email = 'francisco.franco@gmail.com' where nif='06852683V';
 
 
-
----Procedimiento que imprime la cabecera del resumen de la factura
-CREATE OR REPLACE PROCEDURE CabeceraResumenFactura
-IS
-BEGIN
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    DBMS_OUTPUT.PUT_LINE('--------------Resumen Factura--------------');
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-END;
+---Función para obtener el importa total de los gastos extra
+--Para ello llamamos ala función ImporteGastos ya realizada con anterioridad
+create or replace function ImporteGastos (p_codE estancias.codigo%type)
+return number
+is 
+    v_gastos number;
+begin
+    select sum(cuantia) into v_gastos from gastos_extra where codigoestancia = (select codigo from estancias where codigo = p_codE);
+    return v_gastos;
+end;
 /
 
-
----Procedimiento que muestre la firma de la empresa en el correo electrónico---
-CREATE OR REPLACE PROCEDURE FirmaCorreo
-IS
-BEGIN
-    DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - - - - - - - ');
-    DBMS_OUTPUT.PUT_LINE('Complejo Rural La Fuente');
-    DBMS_OUTPUT.PUT_LINE('Calle de la Fuente, 1');
-    DBMS_OUTPUT.PUT_LINE('C.P. 50001');
-    DBMS_OUTPUT.PUT_LINE('Zaragoza');
-    DBMS_OUTPUT.PUT_LINE('Telefono: 976 123 456');
-END;
+---Función para obtener el precio total de la estancia
+--Para ello llamamos a la función ImporteAlojamiento ya realizada con anterioridad
+create or replace function ImporteAlojamiento(p_codE estancias.codigo%type)
+return number
+is 
+    v_alojamiento number := 0;
+begin 
+    select sum(preciopordia) into v_alojamiento from tarifas where codigoregimen = (select codigoregimen from estancias where codigo = p_codE);
+    return v_alojamiento;
+end;
 /
 
-
----Procedimiento que muestre los datos de la estancia
-CREATE OR REPLACE FUNCTION FacturaResumen(p_codE estancias.codigo%type)
-RETURN VARCHAR2
-IS
-    p_resumen VARCHAR2(2000);
-BEGIN
-    CabeceraResumenFactura;
-    Estancia (p_codE);
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    DBMS_OUTPUT.PUT_LINE('Importe Total Gastos: ' || ImporteGastos(p_codE));
-    DBMS_OUTPUT.PUT_LINE('Importe Total Actividades: ' || ImporteActividades(p_codE));
-    DBMS_OUTPUT.PUT_LINE('Importe Total Alojamiento: ' || ImporteAlojamiento(p_codE));
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    ImporteFactura(p_codE);
-END;
+---Función para imprimir el importe de las actividades realizadas
+--Para ello llamamos a la función ImporteActividades ya realizada con anterioridad
+create or replace function ImporteActividades(p_codE estancias.codigo%type)
+return number
+is 
+    v_activ number;
+begin 
+    select sum(precioporpersona * numpersonas) into v_activ from actividadesrealizadas, actividades where codigo = codigoactividad and codigoestancia = (select codigo from estancias where codigo = p_codE);
+    return v_activ;
+end;
 /
 
-SELECT FacturaResumen('08') FROM DUAL;
+SELECT ImporteActividades('08') FROM DUAL;
 
 ---Procedimiento que muestra el email del cliente ingresando su código de estancia
 CREATE OR REPLACE FUNCTION EmailCliente (p_codE estancias.codigo%type)
@@ -77,7 +70,7 @@ BEGIN
 END;
 /
 
-SELECT EmailCliente('02') FROM DUAL;
+SELECT EmailCliente('08') FROM DUAL;
 
 ---Función que obtenga la última fecha insertada en la tabla facturas---
 CREATE OR REPLACE FUNCTION FechaFinEstancia (p_codE estancias.codigo%type)
@@ -111,29 +104,38 @@ SELECT NombreCliente('08') FROM DUAL;
 
 ---Crea un trigger para enviar un correo electrónico cuando se rellena la fecha de la factura. El correo electrónico contendrá el resumen de la factura---
 
-CREATE OR REPLACE TRIGGER envio_factura
-AFTER INSERT ON facturas
+CREATE OR REPLACE TRIGGER CorreoFactura
+AFTER INSERT OR UPDATE ON facturas
 FOR EACH ROW
 DECLARE
+    ---Declaración de variables---
     p_nombre VARCHAR2(70);
     p_email personas.email%type;
+    p_codE estancias.codigo%type;
     p_fecha_fin estancias.fecha_fin%type;
-    p_resumen VARCHAR2(2000);
+    v_gastos number;
+    v_alojamiento number;
+    v_activ number;
+    v_total number;
 BEGIN
-    p_nombre := NombreCliente(:new.codigoestancia);
-    p_email := EmailCliente(:new.codigoestancia);
+    ---Asignación de variables---
     p_fecha_fin := FechaFinEstancia(:new.codigoestancia);
+    p_email := EmailCliente(:new.codigoestancia);
+    v_gastos := ImporteGastos(:new.codigoestancia);
+    v_alojamiento := ImporteAlojamiento(:new.codigoestancia);
+    v_activ := ImporteActividades(:new.codigoestancia);
+    p_nombre := NombreCliente(:new.codigoestancia);
+    v_total := v_gastos + v_alojamiento + v_activ;
+    ---Envío del correo electrónico---
     UTL_MAIL.SEND (
         sender => 'mariajesus.allozarodriguez@gmail.com',
         recipients => p_email,
         subject => 'Factura Complejo Rural La Fuente',
-        message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || p_resumen,
-        mime_type => 'text/plain; charset=us-ascii'
+        message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || CHR(10) || '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -' || CHR(10) || '--------------Resumen Factura--------------' || CHR(10) ||  '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -' || CHR(10) || 'El importe de los gastos extra es de ' || v_gastos || ' euros. ' || CHR(10) || 'El importe total de las actividades es de ' || v_activ || ' euros.' || CHR(10) || 'El importe del alojamiento es de ' || v_activ || ' euros.' || CHR(10) ||'El importe total de su estancia es de ' || v_total || ' euros. '|| CHR(10) || '- - - - - - - - - - - - - - - - - - - - - ' || CHR(10) || 'Gracias por compartir su tiempo con nosotros.' || CHR(10) ||  '- - - - - - - - - - - - - - - - - - - - - ' || CHR(10) || 'Complejo Rural La Fuente' || CHR(10) || 'Calle de la Fuente, 1' || CHR(10) || 'C.P. 50001' || CHR(10) || 'Zaragoza' || CHR(10) || 'Telefono: 976 123 456',
+        mime_type => 'text/plain'
     );
 END;
 /
-
-
 
 
 ---Insertamos una factura para que se envíe el correo electrónico---
@@ -142,39 +144,11 @@ INSERT INTO personas VALUES ('32061164S','Maria','Alloza Rodriguez','C/ Leon X',
 
 INSERT INTO estancias VALUES ('08',to_DATE('14-02-2020 12:00','DD-MM-YYYY hh24:mi'),to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'),'05','32061164S','32061164S','AD');
 
+INSERT INTO gastos_extra VALUES ('12','08',to_DATE('15-02-2020 10:00','DD-MM-YYYY hh24:mi'),'Alquiler de pistas',2);
 
 
-INSERT INTO facturas VALUES ('08','08', to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'));
+---Insertamos una factura para que se envíe el correo electrónico---
+INSERT INTO facturas VALUES ('06','08', to_DATE('17-02-2020 12:00','DD-MM-YYYY hh24:mi'));
 
-
-
-
-
-
-
-CREATE OR REPLACE TRIGGER CorreoFactura
-AFTER INSERT ON facturas
-FOR EACH ROW
-DECLARE
-    ---Declaración de variables---
-    p_nombre VARCHAR2(70);
-    p_email personas.email%type;
-    p_codE estancias.codigo%type;
-    p_fecha_fin estancias.fecha_fin%type;
-    p_resumen VARCHAR2(2000);
-BEGIN
-    ---Asignación de variables---
-    p_fecha_fin := FechaFinEstancia(:new.codigoestancia);
-    p_email := EmailCliente(:new.codigoestancia);
-    p_resumen := FacturaResumen(:new.codigoestancia);
-    p_nombre := NombreCliente(:new.codigoestancia);
-    ---Envío del correo electrónico---
-    UTL_MAIL.SEND (
-        sender => 'mariajesus.allozarodriguez@gmail.com',
-        recipients => p_email,
-        subject => 'Factura Complejo Rural La Fuente',
-        message => 'Estimado/a '|| p_nombre || ' le enviamos la factura de su estancia en el Complejo Rural La Fuente. ' || p_resumen,
-        mime_type => 'text/plain; charset=us-ascii'
-    );
-END;
-/
+---Eliminamos la factura para que no se envíe el correo electrónico---
+delete from facturas where codigoestancia='08';
